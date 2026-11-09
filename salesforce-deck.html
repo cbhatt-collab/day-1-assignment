@@ -1,0 +1,2688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salesforce Comic Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Themes ---------- */
+  :root, [data-theme="cloud"] {
+    --sky: #0176D3; --sky-2: #1B96FF; --sky-3: #CFE9FE; --ice: #EAF5FE;
+    --hero-a: #1B96FF; --hero-b: #0176D3; --hero-c: #0B5CAB;
+    --navy: #032D60; --shadow: #032D60; --backdrop: #032D60;
+    --sun: #FFD43B; --coral: #FF5D5D; --mint: #2ECC9A; --grape: #9B6BFF; --peach: #FF9F43;
+    --paper: #FFFDF6; --dot: rgba(1,118,211,.13); --code-bg: #0B1F3A;
+    --p-yellow: #FFE7A3; --p-green: #C8F3E3; --p-red: #FFD0D0; --p-purple: #E3D6FF; --p-orange: #FFE0C2; --p-pink: #FCD5F0;
+  }
+  [data-theme="neon"] {
+    --sky: #7B2FF7; --sky-2: #B14BFF; --sky-3: #E4D4FF; --ice: #F1E9FF;
+    --hero-a: #B14BFF; --hero-b: #7B2FF7; --hero-c: #3A0CA3;
+    --navy: #120729; --shadow: #FF2E97; --backdrop: #0A0418;
+    --sun: #F9F871; --coral: #FF2E97; --mint: #00F5D4; --grape: #9B6BFF; --peach: #FF9F43;
+    --paper: #1B0F38; --dot: rgba(177,75,255,.25); --code-bg: #0A0418;
+    --p-yellow: #FDFCB8; --p-green: #B8FFF2; --p-red: #FFC2E0; --p-purple: #DCC8FF; --p-orange: #FFD9B3; --p-pink: #FFC8EC;
+  }
+  [data-theme="retro"] {
+    --sky: #E63946; --sky-2: #FF7F11; --sky-3: #FFE1C6; --ice: #FFF1E0;
+    --hero-a: #FF7F11; --hero-b: #E63946; --hero-c: #9D0208;
+    --navy: #2B1B17; --shadow: #2B1B17; --backdrop: #2B1B17;
+    --sun: #FFC93C; --coral: #1D9A8A; --mint: #2A9D8F; --grape: #7B4B94; --peach: #F4A261;
+    --paper: #FFF4E0; --dot: rgba(230,57,70,.14); --code-bg: #2B1B17;
+    --p-yellow: #FFE8A8; --p-green: #CDEFE7; --p-red: #FFD3CC; --p-purple: #E8D9F2; --p-orange: #FFDDBB; --p-pink: #FBD3E0;
+  }
+  [data-theme="jungle"] {
+    --sky: #0E9F6E; --sky-2: #22C55E; --sky-3: #D1FAE5; --ice: #ECFDF5;
+    --hero-a: #22C55E; --hero-b: #0E9F6E; --hero-c: #065F46;
+    --navy: #052E24; --shadow: #052E24; --backdrop: #052E24;
+    --sun: #FDE047; --coral: #FB7185; --mint: #14B8A6; --grape: #8B5CF6; --peach: #FB923C;
+    --paper: #F7FFF9; --dot: rgba(14,159,110,.14); --code-bg: #052E24;
+    --p-yellow: #FEF3C7; --p-green: #CCFBF1; --p-red: #FFE4E6; --p-purple: #EDE9FE; --p-orange: #FFEDD5; --p-pink: #FCE7F3;
+  }
+  [data-theme="noir"] {
+    --sky: #1F1F1F; --sky-2: #FFFFFF; --sky-3: #F3E9C6; --ice: #FAF6EA;
+    --hero-a: #2A2A2A; --hero-b: #141414; --hero-c: #000000;
+    --navy: #0B0B0B; --shadow: #C9A227; --backdrop: #000000;
+    --sun: #E8C766; --coral: #B8202E; --mint: #3C9D74; --grape: #6B4FA0; --peach: #C77D3A;
+    --paper: #F4EFE3; --dot: rgba(0,0,0,.08); --code-bg: #141414;
+    --p-yellow: #F3E6B5; --p-green: #D5E8DC; --p-red: #F1D2D2; --p-purple: #E0D8EC; --p-orange: #F1DEC6; --p-pink: #EFD6E0;
+  }
+  :root {
+    --ink-w: 4px;
+    --pop: 8px 8px 0 var(--shadow);
+    --pop-sm: 5px 5px 0 var(--shadow);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--backdrop);
+    font-family: "Nunito", system-ui, sans-serif;
+    color: var(--navy);
+  }
+
+  /* ---------- Stage: fixed 16:9 canvas scaled to fit ---------- */
+  .viewport {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    background:
+      radial-gradient(circle, rgba(255,255,255,.07) 1.5px, transparent 1.6px) 0 0 / 18px 18px,
+      var(--backdrop);
+  }
+  .stage {
+    position: relative;
+    width: 1600px; height: 900px;
+    transform: scale(var(--scale, 1));
+    flex-shrink: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45);
+  }
+
+  /* ---------- Slides ---------- */
+  .slide {
+    position: absolute; inset: 0;
+    padding: 70px 90px 90px;
+    background:
+      radial-gradient(circle, var(--dot) 2px, transparent 2.2px) 0 0 / 16px 16px,
+      var(--paper);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(.94) rotate(-1.2deg);
+    transition: opacity .45s ease, transform .6s cubic-bezier(.34,1.56,.64,1), visibility 0s .45s;
+  }
+  .slide.active {
+    opacity: 1; visibility: visible; transform: none;
+    transition: opacity .45s ease, transform .6s cubic-bezier(.34,1.56,.64,1);
+  }
+  .slide.sky {
+    background:
+      radial-gradient(circle, rgba(255,255,255,.22) 2px, transparent 2.2px) 0 0 / 16px 16px,
+      linear-gradient(160deg, var(--hero-a), var(--hero-b) 60%, var(--hero-c));
+    color: #fff;
+  }
+
+  /* Entrance animations for children */
+  .slide [data-a] { opacity: 0; }
+  .slide.active [data-a] {
+    animation: popIn .6s cubic-bezier(.34,1.56,.64,1) both;
+    animation-delay: var(--d, .15s);
+  }
+  .slide.active [data-a="up"] { animation-name: slideUp; }
+  .slide.active [data-a="spin"] { animation-name: spinIn; }
+  @keyframes popIn { from { opacity: 0; transform: scale(.4) rotate(-6deg); } to { opacity: 1; transform: var(--t, none); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: var(--t, none); } }
+  @keyframes spinIn { from { opacity: 0; transform: scale(0) rotate(-180deg); } to { opacity: 1; transform: var(--t, none); } }
+  @keyframes float { 50% { translate: 0 -16px; } }
+  @keyframes drift { from { translate: -260px 0; } to { translate: 1900px 0; } }
+  @keyframes wiggle { 50% { rotate: 6deg; } }
+
+  /* ---------- Comic typography ---------- */
+  .comic { font-family: "Bangers", cursive; letter-spacing: .04em; font-weight: 400; }
+  .title {
+    font-family: "Bangers", cursive;
+    font-size: 92px; line-height: .95; letter-spacing: .03em;
+    color: #fff;
+    -webkit-text-stroke: 3px var(--navy);
+    paint-order: stroke fill;
+    text-shadow: 6px 6px 0 var(--shadow);
+  }
+  .title.yellow { color: var(--sun); }
+  .title.blue { color: var(--sky-2); }
+  .caption {
+    display: inline-block;
+    font-family: "Bangers", cursive;
+    font-size: 26px; letter-spacing: .08em;
+    background: var(--sun);
+    color: var(--navy);
+    border: 3px solid var(--navy);
+    padding: 6px 18px 4px;
+    box-shadow: var(--pop-sm);
+    transform: rotate(-2deg);
+    --t: rotate(-2deg);
+  }
+  .lead { font-size: 30px; font-weight: 800; line-height: 1.35; }
+  .header { display: flex; align-items: flex-end; gap: 28px; margin-bottom: 44px; }
+
+  /* ---------- Comic components ---------- */
+  .panel {
+    background: #fff;
+    border: var(--ink-w) solid var(--navy);
+    border-radius: 6px;
+    box-shadow: var(--pop);
+    padding: 30px;
+    position: relative;
+  }
+  .bubble {
+    position: relative;
+    background: #fff;
+    color: var(--navy);
+    border: var(--ink-w) solid var(--navy);
+    border-radius: 40px;
+    padding: 22px 30px;
+    font-size: 28px; font-weight: 900; line-height: 1.25;
+    box-shadow: var(--pop-sm);
+  }
+  .bubble::before, .bubble::after {
+    content: ""; position: absolute; border-style: solid;
+  }
+  .bubble::before {
+    left: 50px; bottom: -34px;
+    border-width: 34px 0 0 34px;
+    border-color: var(--navy) transparent transparent transparent;
+  }
+  .bubble::after {
+    left: 54px; bottom: -20px;
+    border-width: 24px 0 0 24px;
+    border-color: #fff transparent transparent transparent;
+  }
+  .bubble.tail-right::before { left: auto; right: 50px; border-width: 34px 34px 0 0; }
+  .bubble.tail-right::after { left: auto; right: 54px; border-width: 24px 24px 0 0; }
+
+  .burst {
+    display: grid; place-items: center;
+    font-family: "Bangers", cursive;
+    color: var(--navy);
+    background: var(--sun);
+    clip-path: polygon(50% 0%, 61% 18%, 82% 7%, 79% 30%, 100% 33%, 85% 50%, 100% 67%, 79% 70%, 82% 93%, 61% 82%, 50% 100%, 39% 82%, 18% 93%, 21% 70%, 0% 67%, 15% 50%, 0% 33%, 21% 30%, 18% 7%, 39% 18%);
+    filter: drop-shadow(0 0 0 var(--shadow));
+    text-align: center;
+  }
+  .burst-wrap { position: relative; display: grid; place-items: center; }
+  .burst-wrap .burst.back { position: absolute; inset: 0; background: var(--shadow); transform: translate(8px, 8px); }
+  .burst-wrap .burst.front { position: relative; width: 100%; height: 100%; }
+
+  .mascot { animation: float 4s ease-in-out infinite; filter: drop-shadow(8px 10px 0 rgba(3,45,96,.25)); }
+
+  .cloud-deco {
+    position: absolute; width: 220px; height: 70px;
+    background: #fff; border-radius: 50px; opacity: .85;
+    animation: drift linear infinite;
+  }
+  .cloud-deco::before, .cloud-deco::after {
+    content: ""; position: absolute; background: #fff; border-radius: 50%;
+  }
+  .cloud-deco::before { width: 100px; height: 100px; top: -50px; left: 30px; }
+  .cloud-deco::after { width: 80px; height: 80px; top: -36px; right: 30px; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-weight: 900; font-size: 20px;
+    background: var(--ice);
+    border: 3px solid var(--navy);
+    border-radius: 999px;
+    padding: 6px 16px;
+  }
+
+  .page-no {
+    position: absolute; right: 36px; bottom: 26px;
+    font-family: "Bangers", cursive; font-size: 24px; letter-spacing: .08em;
+    background: #fff; border: 3px solid var(--navy); padding: 2px 14px 0;
+    box-shadow: 3px 3px 0 var(--shadow);
+    color: var(--navy);
+  }
+
+  /* ---------- Slide 1: Title ---------- */
+  .s-title { display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 30px; }
+  .s-title .title { font-size: 168px; }
+  .s-title .sub {
+    font-family: "Bangers", cursive; font-size: 54px; letter-spacing: .04em;
+    color: var(--sun); -webkit-text-stroke: 2px var(--navy); paint-order: stroke fill;
+    text-shadow: 4px 4px 0 var(--shadow);
+    margin: 18px 0 34px;
+  }
+  .s-title .hero { position: relative; display: grid; justify-items: center; }
+  .s-title .hero .bubble { margin-bottom: 40px; transform: rotate(3deg); --t: rotate(3deg); }
+  .press {
+    display: inline-flex; align-items: center; gap: 14px;
+    background: var(--navy); color: #fff;
+    font-weight: 900; font-size: 24px;
+    padding: 14px 26px; border-radius: 999px;
+    border: 3px solid #fff;
+  }
+  .press kbd {
+    font-family: inherit; background: var(--sun); color: var(--navy);
+    border-radius: 8px; padding: 0 10px; border: 2px solid var(--navy);
+  }
+
+  /* ---------- Slide 2: Agenda ---------- */
+  .agenda { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+  .agenda .panel { padding: 24px 26px 26px; min-height: 230px; display: flex; flex-direction: column; justify-content: space-between; }
+  .agenda .num {
+    font-family: "Bangers", cursive; font-size: 64px; line-height: 1;
+    color: var(--c, var(--sky)); -webkit-text-stroke: 2px var(--navy); paint-order: stroke fill;
+    text-shadow: 4px 4px 0 var(--shadow);
+  }
+  .agenda .icon { font-size: 44px; position: absolute; right: 22px; top: 20px; }
+  .agenda h3 { font-size: 30px; font-weight: 900; line-height: 1.1; }
+  .agenda .panel:nth-child(odd) { --t: rotate(-1.2deg); }
+  .agenda .panel:nth-child(even) { --t: rotate(1.2deg); }
+
+  /* ---------- Slide 3: Origin ---------- */
+  .strip { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 28px; height: 560px; }
+  .strip .panel { display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+  .strip .panel .caption { position: absolute; top: -4px; left: -4px; transform: none; --t: none; box-shadow: none; }
+  .strip .art { font-size: 120px; text-align: center; margin-top: 70px; }
+  .strip p { font-size: 27px; font-weight: 800; line-height: 1.35; }
+  .strip .mid { background: var(--sun); display: grid; place-items: center; text-align: center; }
+  .strip .mid .burst-wrap { width: 340px; height: 300px; }
+  .strip .mid .burst.front { background: var(--coral); color: #fff; font-size: 84px; -webkit-text-stroke: 2px var(--navy); paint-order: stroke fill; }
+  .speed-lines {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-conic-gradient(from 0deg at 50% 45%, rgba(3,45,96,.12) 0 3deg, transparent 3deg 12deg);
+  }
+  .stat-big { font-family: "Bangers", cursive; font-size: 96px; color: var(--sky); -webkit-text-stroke: 2px var(--navy); paint-order: stroke fill; text-shadow: 4px 4px 0 var(--shadow); text-align: center; line-height: 1; margin-top: 60px; }
+
+  /* ---------- Slide 4: CRM ---------- */
+  .crm { display: grid; grid-template-columns: 1fr 420px 1fr; grid-template-rows: 1fr 1fr; gap: 30px 40px; align-items: center; height: 560px; }
+  .crm .center { grid-row: 1 / 3; grid-column: 2; display: grid; justify-items: center; gap: 24px; }
+  .crm .data { display: flex; gap: 20px; align-items: center; padding: 24px 26px; }
+  .crm .data .ico {
+    flex-shrink: 0; width: 84px; height: 84px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 42px;
+    background: var(--c); border: 3px solid var(--navy);
+  }
+  .crm .data h4 { font-size: 30px; font-weight: 900; }
+  .crm .data p { font-size: 20px; font-weight: 700; opacity: .75; }
+  .crm .hub-label {
+    font-family: "Bangers", cursive; font-size: 44px; letter-spacing: .05em;
+    background: var(--sky); color: #fff; padding: 6px 26px 2px;
+    border: var(--ink-w) solid var(--navy); box-shadow: var(--pop-sm);
+    -webkit-text-stroke: 1px var(--navy); paint-order: stroke fill;
+  }
+  .crm-why { position: absolute; left: 90px; right: 90px; bottom: 60px; text-align: center; }
+  .crm-why .bubble { display: inline-block; background: var(--sun); }
+  .crm-why .bubble::after { border-top-color: var(--sun); }
+
+  /* ---------- Slide 5: Clouds ---------- */
+  .clouds { display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; }
+  .clouds .panel { padding: 24px; display: flex; flex-direction: column; gap: 12px; min-height: 250px; }
+  .clouds .badge {
+    width: 72px; height: 72px; border-radius: 20px;
+    display: grid; place-items: center; font-size: 38px;
+    background: var(--c); border: 3px solid var(--navy); box-shadow: 4px 4px 0 var(--shadow);
+    transform: rotate(-6deg);
+  }
+  .clouds h3 { font-family: "Bangers", cursive; font-size: 38px; letter-spacing: .04em; line-height: 1; margin-top: 6px; }
+  .clouds p { font-size: 21px; font-weight: 700; line-height: 1.3; }
+  .clouds .panel.feature { background: var(--navy); color: #fff; justify-content: center; align-items: center; text-align: center; }
+  .clouds .panel.feature .title { font-size: 58px; color: var(--sun); -webkit-text-stroke: 2px var(--navy); text-shadow: none; }
+
+  /* ---------- Slide 6: Platform ---------- */
+  .versus { display: grid; grid-template-columns: 1fr 200px 1fr; align-items: stretch; gap: 10px; height: 520px; }
+  .versus .panel { padding: 32px 34px; }
+  .versus .side-title { font-family: "Bangers", cursive; font-size: 58px; letter-spacing: .04em; line-height: 1; margin-bottom: 6px; }
+  .versus .side-sub { font-size: 22px; font-weight: 800; opacity: .7; margin-bottom: 24px; }
+  .versus ul { list-style: none; display: grid; gap: 16px; }
+  .versus li { display: flex; gap: 16px; align-items: flex-start; font-size: 22px; font-weight: 700; line-height: 1.3; }
+  .versus li b { display: block; font-size: 26px; font-weight: 900; }
+  .versus li .dot {
+    flex-shrink: 0; width: 46px; height: 46px; border-radius: 12px;
+    display: grid; place-items: center; font-size: 24px;
+    border: 3px solid var(--navy); background: var(--c, var(--ice));
+  }
+  .versus .clicks { background: var(--ice); --t: rotate(-1deg); }
+  .versus .code { background: var(--code-bg); color: #fff; --t: rotate(1deg); }
+  .versus .code .side-title { color: var(--sun); }
+  .versus .code .dot { border-color: var(--sun); }
+  .versus .vs { display: grid; place-items: center; }
+  .versus .vs .burst-wrap { width: 190px; height: 190px; }
+  .versus .vs .burst.front { font-size: 72px; background: var(--coral); color: #fff; -webkit-text-stroke: 2px var(--navy); paint-order: stroke fill; }
+  .snippet {
+    margin-top: 22px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 18px; line-height: 1.6;
+    background: rgba(255,255,255,.06); border: 2px dashed rgba(255,212,59,.6); border-radius: 12px; padding: 14px 18px;
+  }
+  .snippet .k { color: #FF9BD2; } .snippet .s { color: #9BE7C4; } .snippet .c { color: #7FA7D6; }
+  .ribbon {
+    position: absolute; left: 90px; right: 90px; bottom: 56px;
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    background: var(--sun); border: var(--ink-w) solid var(--navy); box-shadow: var(--pop-sm);
+    padding: 14px 24px; font-size: 26px; font-weight: 900;
+    transform: rotate(-.6deg); --t: rotate(-.6deg);
+  }
+  .ribbon .comic { font-size: 34px; }
+
+  /* ---------- Slide 7: AI ---------- */
+  .ai { display: grid; grid-template-columns: 430px 1fr; gap: 50px; align-items: center; height: 600px; }
+  .ai .bot-col { display: grid; justify-items: center; gap: 30px; }
+  .ai .bot-col .bubble { font-size: 26px; text-align: center; }
+  .ai .bot { width: 300px; animation: float 3.5s ease-in-out infinite; filter: drop-shadow(8px 10px 0 rgba(3,45,96,.25)); }
+  .ai .cards { display: grid; gap: 34px; }
+  .ai .card { display: grid; grid-template-columns: 130px 1fr; gap: 28px; align-items: center; padding: 30px 34px; }
+  .ai .card .em {
+    width: 130px; height: 130px; border-radius: 50%; display: grid; place-items: center; font-size: 66px;
+    border: var(--ink-w) solid var(--navy); background: var(--c); box-shadow: 5px 5px 0 var(--shadow);
+  }
+  .ai .card h3 { font-family: "Bangers", cursive; font-size: 54px; letter-spacing: .04em; line-height: 1; }
+  .ai .card .tag { display: inline-block; margin: 8px 0 12px; }
+  .ai .card p { font-size: 23px; font-weight: 700; line-height: 1.35; }
+  .ai .card:nth-child(1) { --t: rotate(-1deg); }
+  .ai .card:nth-child(2) { --t: rotate(1deg); margin-left: 40px; }
+
+  /* ---------- Slide 8: Benefits ---------- */
+  .powerups { display: grid; grid-template-columns: repeat(5, 1fr); gap: 26px; margin-top: 30px; }
+  .pu { display: grid; justify-items: center; text-align: center; gap: 22px; }
+  .pu .burst-wrap { width: 230px; height: 230px; }
+  .pu .burst.front { background: var(--c); font-size: 84px; }
+  .pu .burst-wrap { animation: wiggle 3s ease-in-out infinite; animation-delay: var(--w, 0s); }
+  .pu .label {
+    font-family: "Bangers", cursive; font-size: 40px; letter-spacing: .05em; line-height: 1;
+    color: #fff; -webkit-text-stroke: 2px var(--navy); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--shadow);
+  }
+  .pu p {
+    font-size: 21px; font-weight: 800; line-height: 1.3;
+    background: #fff; color: var(--navy); border: 3px solid var(--navy); border-radius: 16px;
+    padding: 12px 14px; box-shadow: 4px 4px 0 var(--shadow);
+  }
+
+  /* ---------- Slide 9: Trailhead ---------- */
+  .trail-wrap { position: relative; height: 560px; }
+  .trail-wrap svg.trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .trail-path { stroke-dasharray: 2600; stroke-dashoffset: 2600; }
+  .slide.active .trail-path { animation: draw 2.2s .3s ease forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .stop { position: absolute; width: 290px; transform: translate(-50%, -50%); --t: translate(-50%, -50%); }
+  .stop .flag {
+    width: 96px; height: 96px; margin: 0 auto 14px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 44px;
+    background: var(--c); border: var(--ink-w) solid var(--navy); box-shadow: 5px 5px 0 var(--shadow);
+  }
+  .stop .panel { padding: 14px 18px; text-align: center; }
+  .stop .lvl { font-family: "Bangers", cursive; font-size: 22px; letter-spacing: .08em; color: var(--sky); }
+  .stop h4 { font-size: 24px; font-weight: 900; line-height: 1.15; }
+  .trail-tip { position: absolute; right: 0; top: -20px; width: 430px; }
+  .trail-tip .bubble { font-size: 23px; background: var(--sun); }
+  .trail-tip .bubble::after { border-top-color: var(--sun); }
+
+  /* ---------- Slide 10: Finale ---------- */
+  .finale { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; height: 100%; }
+  .finale .burst-wrap { width: 640px; height: 470px; }
+  .finale .burst.front { background: var(--sun); }
+  .finale .burst .title { font-size: 150px; color: var(--coral); }
+  .finale .burst .small { font-family: "Nunito"; font-weight: 900; font-size: 30px; margin-top: -6px; }
+  .finale ul { list-style: none; display: grid; gap: 20px; margin: 30px 0 40px; }
+  .finale li {
+    display: flex; align-items: center; gap: 18px;
+    font-size: 30px; font-weight: 900;
+    background: #fff; color: var(--navy); border: var(--ink-w) solid var(--navy); box-shadow: var(--pop-sm);
+    padding: 14px 22px; border-radius: 14px;
+  }
+  .finale li .ck {
+    width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--mint); border: 3px solid var(--navy); font-size: 24px; color: #fff;
+  }
+  .finale .thanks { display: flex; align-items: center; gap: 24px; }
+
+  /* ---------- Slide 11: Pong ---------- */
+  .pong { display: grid; grid-template-columns: 1fr 360px; gap: 34px; align-items: start; }
+  .pong-court { padding: 0; overflow: hidden; border-radius: 14px; }
+  .pong-court canvas { display: block; width: 100%; aspect-ratio: 1000 / 560; touch-action: none; cursor: ns-resize; }
+  .pong-side { display: grid; gap: 22px; }
+  .pong-side .panel { padding: 20px 22px; }
+  .pong-side h3 { font-family: "Bangers", cursive; font-size: 34px; letter-spacing: .04em; line-height: 1; margin-bottom: 14px; }
+  .keys { list-style: none; display: grid; gap: 12px; }
+  .keys li { display: flex; align-items: center; gap: 8px; }
+  .keys p { font-size: 19px; font-weight: 800; margin-left: 6px; }
+  .key {
+    display: inline-grid; place-items: center;
+    min-width: 44px; height: 44px; padding: 0 10px;
+    font-weight: 900; font-size: 20px;
+    background: var(--ice); border: 3px solid var(--navy); border-bottom-width: 6px; border-radius: 10px;
+  }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 3px solid var(--navy); border-radius: 12px; overflow: hidden; }
+  .seg button {
+    font: 900 18px "Nunito", sans-serif; padding: 10px 0; cursor: pointer;
+    background: #fff; color: var(--navy); border: 0; border-right: 3px solid var(--navy);
+    transition: background .2s;
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button:hover { background: var(--ice); }
+  .seg button.on { background: var(--sun); }
+  .pong-taunt { display: grid; justify-items: end; gap: 26px; }
+  .pong-taunt .bubble { font-size: 21px; }
+  .pong-taunt svg { margin-right: 14px; animation: float 3.5s ease-in-out infinite; }
+
+  /* ---------- Slide 0: AI generator ---------- */
+  .s-gen { display: grid; grid-template-columns: 1.3fr .7fr; align-items: center; gap: 40px; }
+  .s-gen { padding-top: 56px; }
+  .s-gen .title { font-size: 106px; }
+  .gen-lead { font-size: 28px; font-weight: 800; line-height: 1.3; margin: 16px 0 24px; max-width: 860px; }
+  .gen-card { display: grid; color: var(--navy); padding: 24px 32px; max-width: 900px; --t: rotate(-.6deg); }
+  .gen-fields, .gen-progress {
+    grid-area: 1 / 1;
+    transition: opacity .35s ease, transform .5s cubic-bezier(.34,1.56,.64,1), visibility 0s;
+  }
+  .gen-progress, .gen-card.busy .gen-fields {
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .3s ease, transform .4s ease, visibility 0s .4s;
+  }
+  .gen-progress { align-self: center; transform: translateY(30px) scale(.96); }
+  .gen-card.busy .gen-fields { transform: translateY(-30px) scale(.96); }
+  .gen-card.busy .gen-progress {
+    opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+    transition: opacity .35s ease .1s, transform .5s cubic-bezier(.34,1.56,.64,1) .1s, visibility 0s;
+  }
+  .gen-label { display: block; font-family: "Bangers", cursive; font-size: 32px; letter-spacing: .04em; margin-bottom: 12px; }
+  .gen-row { display: flex; gap: 14px; }
+  .gen-input {
+    flex: 1; min-width: 0;
+    font: 800 28px "Nunito", sans-serif; color: var(--navy);
+    background: var(--ice); border: var(--ink-w) solid var(--navy); border-radius: 14px;
+    padding: 12px 20px; outline: none;
+    transition: box-shadow .2s;
+  }
+  .gen-input::placeholder { color: var(--navy); opacity: .4; }
+  .gen-input:focus { box-shadow: 0 0 0 5px var(--sun); }
+  .gen-input.small { display: block; width: 100%; font-size: 18px; padding: 10px 14px; border-width: 3px; }
+  .gen-go {
+    font-family: "Bangers", cursive; font-size: 36px; letter-spacing: .05em; white-space: nowrap;
+    padding: 6px 30px 2px; cursor: pointer;
+    background: var(--sun); color: var(--navy);
+    border: var(--ink-w) solid var(--navy); border-radius: 14px; box-shadow: var(--pop-sm);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .gen-go:hover { transform: translate(-2px, -2px) rotate(-1.5deg); box-shadow: 7px 7px 0 var(--shadow); }
+  .gen-go:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--shadow); }
+  .gen-ideas { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; font-weight: 900; font-size: 18px; }
+  .gen-ideas button {
+    font: 800 17px "Nunito", sans-serif; color: var(--navy); cursor: pointer;
+    background: #fff; border: 3px solid var(--navy); border-radius: 999px; padding: 4px 14px;
+    transition: transform .15s, background .15s;
+  }
+  .gen-ideas button:hover { background: var(--p-yellow); transform: rotate(-3deg) scale(1.05); }
+  .gen-key { margin-top: 18px; font-weight: 800; font-size: 17px; }
+  .gen-key summary { width: max-content; cursor: pointer; }
+  .gen-key[open] summary { margin-bottom: 10px; }
+  .gen-key small { display: block; margin-top: 6px; font-size: 14px; opacity: .65; }
+  #genKeyState { color: var(--coral); }
+  #genKeyState.ok { color: var(--mint); }
+
+  .gen-ptop { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; margin-bottom: 14px; }
+  .gen-stage { font-size: 38px; letter-spacing: .04em; line-height: 1.05; }
+  .gen-pct { font-size: 46px; color: var(--sky); font-variant-numeric: tabular-nums; }
+  .gen-bar {
+    height: 46px; overflow: hidden;
+    background: var(--ice); border: var(--ink-w) solid var(--navy); border-radius: 999px; box-shadow: var(--pop-sm);
+  }
+  .gen-fill {
+    width: 0; height: 100%;
+    background: repeating-linear-gradient(-45deg, var(--sun) 0 22px, var(--peach) 22px 44px) 0 0 / 62.23px 62.23px;
+    border-right: var(--ink-w) solid var(--navy);
+    animation: barberpole .8s linear infinite;
+  }
+  @keyframes barberpole { to { background-position: 62.23px 0; } }
+  .gen-card.done .gen-fill { background: var(--mint); animation: none; }
+  .gen-card.failed .gen-fill { background: var(--coral); animation: none; }
+  .gen-detail { margin-top: 14px; min-height: 26px; font-weight: 800; font-size: 19px; opacity: .8; }
+  .gen-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 14px; }
+  .gen-dots { display: flex; flex-wrap: wrap; gap: 8px; }
+  .gen-dot {
+    display: grid; place-items: center; width: 44px; height: 36px;
+    font-family: "Bangers", cursive; font-size: 18px; letter-spacing: .04em;
+    background: #fff; border: 3px solid var(--navy); border-radius: 10px;
+    transition: background .3s, transform .45s cubic-bezier(.34,1.56,.64,1);
+  }
+  .gen-dot.now { background: var(--sun); transform: translateY(-4px); }
+  .gen-dot.on { background: var(--mint); transform: rotate(-4deg); }
+  .gen-cancel {
+    font: 900 16px "Nunito", sans-serif; color: var(--navy); cursor: pointer;
+    background: #fff; border: 3px solid var(--navy); border-radius: 999px; padding: 8px 18px;
+    transition: transform .15s;
+  }
+  .gen-cancel:hover { transform: scale(1.06) rotate(-2deg); }
+  .gen-cancel:disabled { opacity: .4; pointer-events: none; }
+
+  .gen-hero { display: grid; justify-items: center; gap: 44px; }
+  .gen-hero .bubble { max-width: 470px; font-size: 26px; text-align: center; --t: rotate(-2deg); }
+  #genSay { display: inline-block; }
+  #genSay.bump { animation: popIn .45s cubic-bezier(.34,1.56,.64,1); }
+  .gen-bot { animation: float 4s ease-in-out infinite; filter: drop-shadow(8px 10px 0 rgba(3,45,96,.25)); }
+  .s-gen.busy .gen-bot { animation: float .9s ease-in-out infinite, wiggle .45s ease-in-out infinite; }
+
+  /* ---------- Chat bot ---------- */
+  .chat {
+    position: fixed; right: 20px; bottom: 76px; z-index: 12;
+    width: min(420px, calc(100vw - 32px)); height: min(620px, calc(100vh - 100px));
+    display: flex; flex-direction: column; overflow: hidden;
+    background: #fff; color: var(--navy);
+    border: 3px solid var(--navy); border-radius: 20px; box-shadow: 6px 6px 0 var(--shadow);
+    transform-origin: 85% 100%;
+    opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(24px) scale(.9);
+    transition: transform .35s ease, opacity .25s, visibility 0s .35s;
+  }
+  body.chat-open .chat {
+    opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+    transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .25s, visibility 0s;
+  }
+  body.chat-open #chatBtn { background: var(--sun); }
+  .chat-head {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: linear-gradient(135deg, var(--hero-a), var(--hero-c)); color: #fff;
+    border-bottom: 3px solid var(--navy);
+  }
+  .chat-head svg { flex: none; filter: drop-shadow(2px 3px 0 rgba(0,0,0,.25)); }
+  .chat.busy .chat-head svg { animation: wiggle .45s ease-in-out infinite; }
+  .chat-head .grow { flex: 1; min-width: 0; }
+  .chat-head h3 {
+    font-family: "Bangers", cursive; font-weight: 400; font-size: 26px; letter-spacing: .05em; line-height: 1;
+    -webkit-text-stroke: 1px var(--navy); paint-order: stroke fill;
+  }
+  .chat-head small { display: block; font-weight: 800; font-size: 13px; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-head button {
+    flex: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+    border: 3px solid var(--navy); background: #fff; color: var(--navy); font-size: 14px; font-weight: 900;
+    transition: transform .15s;
+  }
+  .chat-head button:hover { transform: scale(1.1) rotate(-6deg); }
+  .chat-log {
+    flex: 1; overflow-y: auto; overscroll-behavior: contain;
+    display: flex; flex-direction: column; gap: 12px; padding: 16px 14px;
+    background: radial-gradient(circle, var(--dot) 1.5px, transparent 1.7px) 0 0 / 14px 14px, var(--paper);
+  }
+  .msg {
+    max-width: 86%; padding: 10px 14px; overflow-wrap: anywhere;
+    color: var(--navy); font-weight: 700; font-size: 15.5px; line-height: 1.45;
+    border: 3px solid var(--navy); border-radius: 16px; box-shadow: 3px 3px 0 var(--shadow);
+    animation: msgIn .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(.95); } }
+  .msg.user { align-self: flex-end; background: var(--sun); border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: #fff; border-bottom-left-radius: 4px; }
+  .msg.error { background: var(--p-red); }
+  .msg p + p, .msg p + ul, .msg ul + p { margin-top: 8px; }
+  .msg ul { padding-left: 20px; }
+  .msg li + li { margin-top: 4px; }
+  .msg code { font: .9em ui-monospace, Menlo, monospace; background: var(--ice); padding: 0 4px; border-radius: 4px; }
+  .cite {
+    font: 900 12.5px "Nunito", sans-serif; color: var(--navy); cursor: pointer; vertical-align: 1px;
+    background: var(--sky-3); border: 2px solid var(--navy); border-radius: 999px; padding: 0 8px;
+    transition: transform .15s, background .15s;
+  }
+  .cite:hover { background: var(--sun); transform: rotate(-3deg) scale(1.06); }
+  .dots { display: inline-flex; gap: 5px; padding: 6px 2px; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--navy); animation: typing 1s ease-in-out infinite; }
+  .dots i:nth-child(2) { animation-delay: .15s; }
+  .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes typing { 0%, 80%, 100% { transform: none; opacity: .35; } 40% { transform: translateY(-6px); opacity: 1; } }
+  .chat-ideas { display: flex; flex-wrap: wrap; gap: 8px; animation: msgIn .35s cubic-bezier(.34,1.56,.64,1) .15s both; }
+  .chat-ideas button {
+    font: 800 13.5px "Nunito", sans-serif; color: var(--navy); cursor: pointer;
+    background: #fff; border: 2.5px solid var(--navy); border-radius: 999px; padding: 4px 12px;
+    transition: transform .15s, background .15s;
+  }
+  .chat-ideas button:hover { background: var(--p-yellow); transform: rotate(-2deg) scale(1.04); }
+  .chat-form { display: flex; align-items: flex-end; gap: 8px; padding: 10px; background: #fff; border-top: 3px solid var(--navy); }
+  .chat-form textarea {
+    flex: 1; resize: none; max-height: 120px; outline: none; overflow-y: hidden;
+    font: 700 15px/1.35 "Nunito", sans-serif; color: var(--navy);
+    background: var(--ice); border: 3px solid var(--navy); border-radius: 14px; padding: 9px 12px;
+    transition: box-shadow .2s;
+  }
+  .chat-form textarea::placeholder { color: var(--navy); opacity: .45; }
+  .chat-form textarea:focus { box-shadow: 0 0 0 3px var(--sun); }
+  .chat-form button {
+    flex: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+    border: 3px solid var(--navy); background: var(--sun); color: var(--navy); font-size: 17px; font-weight: 900;
+    transition: transform .15s, background .2s;
+  }
+  .chat-form button:hover { transform: scale(1.08) rotate(-6deg); }
+  .chat.busy .chat-form button { background: var(--coral); color: #fff; }
+
+  /* ---------- Controls ---------- */
+  .controls {
+    position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.96); border: 3px solid var(--navy); border-radius: 999px;
+    padding: 6px 8px; box-shadow: 4px 4px 0 rgba(0,0,0,.35);
+    z-index: 10; transition: opacity .3s;
+  }
+  .controls button {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 3px solid var(--navy); background: var(--sun); color: var(--navy);
+    font-size: 18px; font-weight: 900; cursor: pointer;
+    transition: transform .15s;
+  }
+  .controls button:hover { transform: scale(1.1) rotate(-6deg); }
+  .controls button:focus-visible { outline: 3px solid var(--sky-2); outline-offset: 2px; }
+  .controls .count { font-family: "Bangers", cursive; font-size: 22px; letter-spacing: .06em; min-width: 70px; text-align: center; }
+  .controls .fs { background: var(--ice); }
+  .progress { position: fixed; left: 0; top: 0; height: 6px; background: var(--sun); z-index: 10; transition: width .5s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 2px 0 var(--shadow); }
+  body.idle:not(.editing) .controls { opacity: 0; }
+  .controls .sep { width: 2px; height: 28px; background: var(--navy); opacity: .2; margin: 0 2px; }
+  .controls .pill {
+    width: auto; padding: 0 16px; border-radius: 999px;
+    font-family: "Nunito", sans-serif; font-size: 16px; font-weight: 900;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .controls .pill:hover { transform: scale(1.06) rotate(-2deg); }
+  .controls .save { background: var(--mint); color: #fff; -webkit-text-stroke: .5px var(--navy); }
+  .controls .ghost { background: #fff; }
+  .controls .icon-only { width: 40px; padding: 0; justify-content: center; }
+  .controls .save, .controls .ghost { display: none; }
+  body.editing .controls .save, body.editing .controls .ghost { display: inline-flex; }
+  body.editing .controls #edit { display: none; }
+  body.dirty .controls .save { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(46,204,154,.35); } }
+
+  /* ---------- Edit mode ---------- */
+  body.editing [data-eid] {
+    outline: 2px dashed rgba(27,150,255,.55);
+    outline-offset: 4px;
+    cursor: text;
+    transition: outline-color .15s, background-color .15s;
+  }
+  body.editing .slide.sky [data-eid] { outline-color: rgba(255,255,255,.6); }
+  body.editing [data-eid]:hover { outline: 2px solid var(--sun); }
+  body.editing [data-eid]:focus {
+    outline: 3px solid var(--sun);
+    outline-offset: 5px;
+    background-color: rgba(255,212,59,.18);
+    border-radius: 4px;
+  }
+  body.editing .mascot, body.editing .bot, body.editing .pu .burst-wrap { animation-play-state: paused; }
+
+  .edit-banner {
+    position: fixed; top: 16px; left: 50%;
+    transform: translate(-50%, -140%);
+    display: flex; align-items: center; gap: 12px;
+    background: var(--sun); color: var(--navy);
+    border: 3px solid var(--navy); border-radius: 999px; box-shadow: 4px 4px 0 rgba(0,0,0,.35);
+    padding: 8px 20px; font-weight: 900; font-size: 15px;
+    z-index: 11; transition: transform .45s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap;
+  }
+  .edit-banner .comic { font-size: 22px; letter-spacing: .06em; }
+  .edit-banner kbd { font-family: inherit; background: #fff; border: 2px solid var(--navy); border-radius: 6px; padding: 0 6px; }
+  body.editing .edit-banner { transform: translate(-50%, 0); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 84px;
+    transform: translate(-50%, 30px) scale(.8); opacity: 0;
+    font-family: "Bangers", cursive; font-size: 26px; letter-spacing: .06em;
+    background: #fff; color: var(--navy);
+    border: 3px solid var(--navy); border-radius: 14px; box-shadow: 4px 4px 0 rgba(0,0,0,.35);
+    padding: 8px 22px 4px; z-index: 12; pointer-events: none;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .25s;
+  }
+  .toast.show { transform: translate(-50%, 0) scale(1); opacity: 1; }
+
+  /* ---------- Slide sorter sidebar ---------- */
+  .side-hotspot { position: fixed; left: 0; top: 0; bottom: 0; width: 16px; z-index: 13; }
+  .side-tab {
+    position: fixed; left: 0; top: 50%; transform: translateY(-50%);
+    writing-mode: vertical-rl;
+    font-family: "Bangers", cursive; font-size: 18px; letter-spacing: .12em;
+    background: var(--sun); color: var(--navy);
+    border: 3px solid var(--navy); border-left: none; border-radius: 0 12px 12px 0;
+    padding: 14px 6px; cursor: pointer; z-index: 13;
+    box-shadow: 3px 3px 0 rgba(0,0,0,.3);
+    transition: transform .3s, opacity .3s;
+  }
+  body.side-open .side-tab { transform: translate(-100%, -50%); opacity: 0; }
+  body.idle:not(.side-open) .side-tab { opacity: .35; }
+
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0;
+    width: min(312px, 86vw);
+    display: flex; flex-direction: column;
+    background:
+      radial-gradient(circle, var(--dot) 1.6px, transparent 1.8px) 0 0 / 14px 14px,
+      var(--ice);
+    border-right: 4px solid var(--navy);
+    box-shadow: 6px 0 0 var(--shadow), 20px 0 50px rgba(0,0,0,.35);
+    transform: translateX(calc(-100% - 30px));
+    transition: transform .45s cubic-bezier(.34,1.25,.64,1);
+    z-index: 14;
+  }
+  body.side-open .sidebar { transform: none; }
+  .side-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px 10px 18px;
+    background: var(--sun); border-bottom: 3px solid var(--navy);
+  }
+  .side-head h2 { font-size: 34px; line-height: 1; color: var(--navy); }
+  .side-head small { font-size: 13px; font-weight: 900; opacity: .75; }
+  .side-head .pin {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 3px solid var(--navy); background: #fff; cursor: pointer; font-size: 16px;
+    transition: transform .2s, background .2s;
+  }
+  .side-head .pin:hover { transform: rotate(-12deg) scale(1.08); }
+  .sidebar.pinned .pin { background: var(--navy); transform: rotate(-30deg); }
+  .side-hint { font-size: 13px; font-weight: 800; line-height: 1.35; padding: 10px 18px 0; color: var(--navy); opacity: .8; }
+  .side-list {
+    flex: 1; overflow-y: auto; overscroll-behavior: contain;
+    padding: 14px 18px 100px;
+    display: grid; align-content: start; gap: 16px;
+  }
+  .s-card {
+    position: relative;
+    background: #fff; color: var(--navy);
+    border: 3px solid var(--navy); border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--shadow);
+    padding: 9px 10px 10px;
+    cursor: grab; user-select: none; -webkit-user-select: none;
+    transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s, opacity .2s;
+  }
+  .s-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--shadow); }
+  .s-card.current { outline: 4px solid var(--coral); outline-offset: 3px; }
+  .s-card.dragging { opacity: .3; border-style: dashed; transform: scale(.96); }
+  .s-card.drop-target {
+    transform: scale(1.05) rotate(-1.5deg);
+    box-shadow: 0 0 0 5px var(--sun), 7px 7px 0 var(--shadow);
+  }
+  .s-ghost {
+    position: fixed; z-index: 30; pointer-events: none; margin: 0;
+    transform: rotate(3deg) scale(1.05);
+    box-shadow: 12px 14px 0 rgba(0,0,0,.28);
+    transition: none;
+  }
+  body.sorting, body.sorting * { cursor: grabbing !important; }
+  .s-top { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+  .grip { font-size: 18px; line-height: 1; opacity: .45; touch-action: none; padding: 2px; }
+  .s-num {
+    font-family: "Bangers", cursive; font-size: 18px; letter-spacing: .05em;
+    background: var(--navy); color: #fff; border-radius: 7px; padding: 2px 7px 0;
+  }
+  .s-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .skip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em;
+    background: var(--ice); border: 2px solid var(--navy); border-radius: 999px;
+    padding: 3px 9px 3px 6px; cursor: pointer;
+    transition: background .2s, color .2s;
+  }
+  .skip input { width: 14px; height: 14px; margin: 0; accent-color: var(--navy); cursor: pointer; }
+  .s-card.skipped .skip { background: var(--coral); color: #fff; }
+  .s-card.skipped { opacity: .85; }
+  .thumb-wrap {
+    position: relative; width: 100%; aspect-ratio: 16 / 9;
+    border: 2px solid var(--navy); border-radius: 8px; overflow: hidden;
+    background: var(--paper);
+  }
+  .thumb { position: absolute; inset: 0; pointer-events: none; transition: filter .3s, opacity .3s; }
+  .s-card.skipped .thumb { filter: grayscale(1); opacity: .4; }
+  .stamp {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    font-family: "Bangers", cursive; font-size: 30px; letter-spacing: .1em;
+    color: var(--coral); -webkit-text-stroke: 1.5px var(--navy); paint-order: stroke fill;
+    transform: rotate(-12deg) scale(.6); opacity: 0;
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+  }
+  .s-card.skipped .stamp { transform: rotate(-12deg) scale(1); opacity: 1; }
+
+  /* Live slide thumbnails (clones of the real slides, scaled down) */
+  .thumb .slide.active {
+    width: 1600px; height: 900px; right: auto; bottom: auto;
+    transform: scale(var(--ts, .15)); transform-origin: 0 0;
+    transition: none;
+  }
+  .thumb [data-a] { opacity: 1 !important; }
+  .thumb *, .thumb *::before, .thumb *::after { animation: none !important; transition: none !important; }
+  .thumb .cloud-deco { display: none; }
+  .thumb .trail-path { stroke-dashoffset: 0; }
+
+  /* ---------- Theme picker ---------- */
+  .theme-menu {
+    position: fixed; left: 50%; bottom: 78px;
+    width: min(700px, calc(100vw - 32px));
+    max-height: calc(100vh - 110px); overflow-y: auto;
+    background: #fff; color: var(--navy);
+    border: 3px solid var(--navy); border-radius: 20px;
+    box-shadow: 6px 6px 0 rgba(0,0,0,.35);
+    padding: 16px 18px 18px;
+    transform: translate(-50%, 24px) scale(.94); opacity: 0; pointer-events: none;
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+    z-index: 12;
+  }
+  body.theme-open .theme-menu { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  .theme-menu h3 { font-size: 28px; letter-spacing: .05em; margin-bottom: 12px; }
+  .theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+  .theme-opt {
+    display: flex; flex-direction: column; text-align: left;
+    padding: 0; overflow: hidden; cursor: pointer;
+    background: #fff; color: var(--navy);
+    border: 3px solid var(--navy); border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--shadow);
+    font-family: "Nunito", sans-serif;
+    transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .theme-opt:hover { transform: translateY(-4px) rotate(-1.5deg); }
+  .theme-opt:focus-visible { outline: 3px solid var(--sky-2); outline-offset: 3px; }
+  .theme-opt.on { box-shadow: 0 0 0 4px var(--sun), 4px 4px 0 var(--shadow); }
+  .sw-art {
+    position: relative; display: block; height: 76px;
+    background:
+      radial-gradient(circle, rgba(255,255,255,.25) 1.4px, transparent 1.6px) 0 0 / 9px 9px,
+      linear-gradient(150deg, var(--hero-a), var(--hero-b) 55%, var(--hero-c));
+    border-bottom: 3px solid var(--navy);
+  }
+  .sw-paper {
+    position: absolute; right: 10px; bottom: 10px; width: 56px; height: 36px;
+    background: var(--paper); border: 2px solid var(--navy); border-radius: 4px;
+    box-shadow: 3px 3px 0 var(--shadow);
+  }
+  .sw-dot { position: absolute; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--navy); top: 12px; }
+  .sw-check {
+    position: absolute; left: 8px; bottom: 8px; width: 24px; height: 24px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 13px; font-weight: 900;
+    background: var(--sun); border: 2px solid var(--navy); color: var(--navy);
+    transform: scale(0); transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .theme-opt.on .sw-check { transform: scale(1); }
+  .sw-name { padding: 8px 10px 0; font-size: 15px; font-weight: 900; line-height: 1.1; }
+  .sw-tag { padding: 3px 10px 10px; font-size: 11.5px; font-weight: 700; opacity: .7; line-height: 1.25; }
+</style>
+</head>
+<body>
+
+<!-- Reusable SVG characters -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="cloudy" viewBox="0 0 220 160">
+      <g stroke-width="12" stroke-linejoin="round" style="fill:var(--navy);stroke:var(--navy)">
+        <circle cx="70" cy="90" r="40"/><circle cx="112" cy="66" r="50"/><circle cx="158" cy="92" r="36"/>
+        <rect x="40" y="90" width="150" height="50" rx="25"/>
+      </g>
+      <g fill="#fff">
+        <circle cx="70" cy="90" r="40"/><circle cx="112" cy="66" r="50"/><circle cx="158" cy="92" r="36"/>
+        <rect x="40" y="90" width="150" height="50" rx="25"/>
+      </g>
+      <path d="M78 52 Q96 30 120 32" fill="none" stroke-width="8" stroke-linecap="round" style="stroke:var(--sky-3)"/>
+      <ellipse cx="96" cy="94" rx="8" ry="11" style="fill:var(--navy)"/><circle cx="93" cy="89" r="3.2" fill="#fff"/>
+      <ellipse cx="136" cy="94" rx="8" ry="11" style="fill:var(--navy)"/><circle cx="133" cy="89" r="3.2" fill="#fff"/>
+      <ellipse cx="80" cy="113" rx="10" ry="5.5" opacity=".85" style="fill:#FF9BB0"/>
+      <ellipse cx="152" cy="113" rx="10" ry="5.5" opacity=".85" style="fill:#FF9BB0"/>
+      <path d="M102 114 Q116 132 130 114 Z" stroke-width="4" stroke-linejoin="round" style="fill:var(--navy);stroke:var(--navy)"/>
+      <path d="M109 122 Q116 128 123 122" style="fill:var(--coral)"/>
+    </symbol>
+
+    <symbol id="bot" viewBox="0 0 200 240">
+      <line x1="100" y1="14" x2="100" y2="44" stroke-width="6" style="stroke:var(--navy)"/>
+      <circle cx="100" cy="14" r="11" stroke-width="5" style="fill:var(--sun);stroke:var(--navy)"/>
+      <rect x="34" y="44" width="132" height="100" rx="28" fill="#fff" stroke-width="6" style="stroke:var(--navy)"/>
+      <rect x="22" y="78" width="14" height="32" rx="6" stroke-width="5" style="fill:var(--sky-2);stroke:var(--navy)"/>
+      <rect x="164" y="78" width="14" height="32" rx="6" stroke-width="5" style="fill:var(--sky-2);stroke:var(--navy)"/>
+      <rect x="52" y="64" width="96" height="54" rx="20" style="fill:var(--navy)"/>
+      <circle cx="80" cy="91" r="10" style="fill:var(--mint)"/><circle cx="120" cy="91" r="10" style="fill:var(--mint)"/>
+      <circle cx="77" cy="87" r="3" fill="#fff"/><circle cx="117" cy="87" r="3" fill="#fff"/>
+      <path d="M86 128 Q100 138 114 128" fill="none" stroke-width="5" stroke-linecap="round" style="stroke:var(--navy)"/>
+      <rect x="58" y="154" width="84" height="70" rx="18" stroke-width="6" style="fill:var(--sky-2);stroke:var(--navy)"/>
+      <path d="M104 166 L88 192 H102 L96 214 L114 184 H100 Z" stroke-width="3" stroke-linejoin="round" style="fill:var(--sun);stroke:var(--navy)"/>
+      <path d="M58 172 Q30 168 26 140" fill="none" stroke-width="6" stroke-linecap="round" style="stroke:var(--navy)"/>
+      <circle cx="26" cy="136" r="9" fill="#fff" stroke-width="5" style="stroke:var(--navy)"/>
+      <path d="M142 172 Q170 180 176 206" fill="none" stroke-width="6" stroke-linecap="round" style="stroke:var(--navy)"/>
+      <circle cx="176" cy="210" r="9" fill="#fff" stroke-width="5" style="stroke:var(--navy)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="progress" id="progress"></div>
+
+<div class="viewport">
+  <main class="stage" id="stage">
+
+    <!-- 0 · AI GENERATOR -->
+    <section class="slide sky s-gen" aria-label="Create with AI">
+      <div class="cloud-deco" style="top:60px; animation-duration:48s; animation-delay:-18s; scale:.6; opacity:.5;"></div>
+      <div class="cloud-deco" style="top:800px; animation-duration:56s; animation-delay:-40s; scale:.5; opacity:.5;"></div>
+      <div style="position:relative">
+        <span class="caption" data-a style="--d:.1s">Issue #0 · Make Your Own Deck</span>
+        <h1 class="title" data-a="up" style="--d:.25s; margin-top:18px;">What's Your<br>Story?</h1>
+        <p class="gen-lead" data-a="up" style="--d:.4s">Pick any topic and AI will write every slide in this deck for you, comic style.</p>
+        <form class="panel gen-card" id="genForm" data-a="up" style="--d:.55s" autocomplete="off">
+          <div class="gen-fields">
+            <label class="gen-label" for="genTopic">Your topic</label>
+            <div class="gen-row">
+              <input id="genTopic" class="gen-input" placeholder="e.g. The history of coffee" maxlength="120" required>
+              <button class="gen-go" type="submit">✨ Generate</button>
+            </div>
+            <div class="gen-ideas" id="genIdeas">
+              <span>Try:</span>
+              <button type="button">Space Exploration</button>
+              <button type="button">Electric Cars</button>
+              <button type="button">Ancient Rome</button>
+              <button type="button">Coffee</button>
+            </div>
+            <details class="gen-key" id="genKeyBox">
+              <summary>🔑 Gemini API key <span id="genKeyState"></span></summary>
+              <input id="genKey" type="password" class="gen-input small" placeholder="Paste your Gemini API key" spellcheck="false">
+              <small>Kept only in this browser and sent only to Google's Gemini API.</small>
+            </details>
+          </div>
+          <div class="gen-progress" aria-live="polite">
+            <div class="gen-ptop"><span class="gen-stage comic" id="genStage"></span><span class="gen-pct comic" id="genPct">0%</span></div>
+            <div class="gen-bar" role="progressbar" aria-label="Generation progress"><div class="gen-fill" id="genFill"></div></div>
+            <div class="gen-detail" id="genDetail"></div>
+            <div class="gen-foot">
+              <div class="gen-dots" id="genDots" aria-hidden="true"></div>
+              <button type="button" class="gen-cancel" id="genCancel">Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="gen-hero">
+        <div class="bubble tail-right" data-a style="--d:.9s"><span id="genSay">Give me a topic and I'll write the whole deck! ✨</span></div>
+        <div data-a="spin" style="--d:.5s"><svg class="gen-bot" viewBox="0 0 200 240" height="380" aria-hidden="true"><use href="#bot"/></svg></div>
+      </div>
+      <span class="page-no">01</span>
+    </section>
+
+    <!-- 1 · TITLE -->
+    <section class="slide sky s-title" aria-label="Title">
+      <div class="cloud-deco" style="top:90px; animation-duration:38s; animation-delay:-12s;"></div>
+      <div class="cloud-deco" style="top:720px; animation-duration:52s; animation-delay:-30s; scale:.7;"></div>
+      <div class="cloud-deco" style="top:420px; animation-duration:46s; animation-delay:-4s; scale:.5; opacity:.6;"></div>
+      <div style="position:relative">
+        <span class="caption" data-a style="--d:.1s">Issue #1 · A Cloud Adventure</span>
+        <h1 class="title" data-a="up" style="--d:.25s; margin-top:26px;">Sales<br>force!</h1>
+        <p class="sub" data-a="up" style="--d:.45s">The Cloud That Changed Everything</p>
+        <span class="press" data-a style="--d:.7s">Press <kbd>→</kbd> to start the adventure</span>
+      </div>
+      <div class="hero">
+        <div class="bubble" data-a style="--d:.9s">Hi! I'm Cloudy ☁️<br>Let's explore Salesforce!</div>
+        <svg class="mascot" width="520" height="378" data-a="spin" style="--d:.4s"><use href="#cloudy"/></svg>
+      </div>
+    </section>
+
+    <!-- 2 · AGENDA -->
+    <section class="slide" aria-label="Agenda">
+      <div class="header">
+        <h2 class="title blue" data-a="up">Today's Episode</h2>
+        <span class="caption" data-a style="--d:.3s">8 chapters · 0 boring bits</span>
+      </div>
+      <div class="agenda">
+        <div class="panel" data-a style="--d:.2s; --c:var(--sky-2)"><span class="icon">📖</span><span class="num">01</span><h3>The Origin Story</h3></div>
+        <div class="panel" data-a style="--d:.3s; --c:var(--coral)"><span class="icon">🤝</span><span class="num">02</span><h3>What Is CRM?</h3></div>
+        <div class="panel" data-a style="--d:.4s; --c:var(--sun)"><span class="icon">☁️</span><span class="num">03</span><h3>Meet the Clouds</h3></div>
+        <div class="panel" data-a style="--d:.5s; --c:var(--mint)"><span class="icon">🛠️</span><span class="num">04</span><h3>The Platform</h3></div>
+        <div class="panel" data-a style="--d:.6s; --c:var(--grape)"><span class="icon">🤖</span><span class="num">05</span><h3>AI Superpowers</h3></div>
+        <div class="panel" data-a style="--d:.7s; --c:var(--peach)"><span class="icon">⚡</span><span class="num">06</span><h3>Power-Ups (Benefits)</h3></div>
+        <div class="panel" data-a style="--d:.8s; --c:var(--sky)"><span class="icon">🥾</span><span class="num">07</span><h3>Hit the Trail</h3></div>
+        <div class="panel" data-a style="--d:.9s; --c:var(--coral)"><span class="icon">🎬</span><span class="num">08</span><h3>The Grand Finale</h3></div>
+      </div>
+      <span class="page-no">02</span>
+    </section>
+
+    <!-- 3 · ORIGIN -->
+    <section class="slide" aria-label="Origin story">
+      <div class="header">
+        <h2 class="title yellow" data-a="up">The Origin Story</h2>
+        <span class="caption" data-a style="--d:.3s">Chapter 01</span>
+      </div>
+      <div class="strip">
+        <div class="panel" data-a="up" style="--d:.2s; --t:rotate(-1deg)">
+          <span class="caption">1999 · Once upon a time…</span>
+          <div class="art">📦⏳</div>
+          <p>Business software came in <b>boxes</b>. Installing it took servers, IT teams, and <i>forever</i>.</p>
+        </div>
+        <div class="panel mid" data-a="up" style="--d:.4s">
+          <div class="speed-lines"></div>
+          <div style="position:relative; display:grid; justify-items:center; gap:24px;">
+            <div class="burst-wrap" data-a="spin" style="--d:.8s"><div class="burst back"></div><div class="burst front">BOOM!</div></div>
+            <p>Four founders put software <b>in the browser</b>. <br><b>SaaS</b> was born! 🚀</p>
+          </div>
+        </div>
+        <div class="panel" data-a="up" style="--d:.6s; --t:rotate(1deg)">
+          <span class="caption">Today…</span>
+          <div class="stat-big">#1 CRM</div>
+          <p style="text-align:center; margin-top:16px;">in the world</p>
+          <p>Hundreds of thousands of companies run on it, from startups to global giants. 🌍</p>
+        </div>
+      </div>
+      <span class="page-no">03</span>
+    </section>
+
+    <!-- 4 · CRM -->
+    <section class="slide" aria-label="What is CRM">
+      <div class="header">
+        <h2 class="title blue" data-a="up">What Is CRM?</h2>
+        <span class="caption" data-a style="--d:.3s">Customer Relationship Management</span>
+      </div>
+      <div class="crm">
+        <div class="panel data" data-a style="--d:.5s; --c:var(--sky-3); --t:rotate(-1.5deg)"><div class="ico">📇</div><div><h4>Contacts</h4><p>Who your customers are</p></div></div>
+        <div class="center">
+          <svg class="mascot" width="360" height="262" data-a="spin" style="--d:.2s"><use href="#cloudy"/></svg>
+          <span class="hub-label" data-a style="--d:.4s">One Customer Hub</span>
+        </div>
+        <div class="panel data" data-a style="--d:.6s; --c:var(--p-yellow); --t:rotate(1.5deg)"><div class="ico">🛒</div><div><h4>Purchases</h4><p>What they bought and when</p></div></div>
+        <div class="panel data" data-a style="--d:.7s; --c:var(--p-red); --t:rotate(1deg)"><div class="ico">🎫</div><div><h4>Support Tickets</h4><p>Problems, solved fast</p></div></div>
+        <div class="panel data" data-a style="--d:.8s; --c:var(--p-green); --t:rotate(-1deg)"><div class="ico">💬</div><div><h4>Conversations</h4><p>Every email, call, and chat</p></div></div>
+      </div>
+      <div class="crm-why" data-a="up" style="--d:1s">
+        <div class="bubble">💡 One source of truth = smarter teams + happier customers!</div>
+      </div>
+      <span class="page-no">04</span>
+    </section>
+
+    <!-- 5 · CLOUDS -->
+    <section class="slide" aria-label="Meet the Clouds">
+      <div class="header">
+        <h2 class="title yellow" data-a="up">Meet the Clouds!</h2>
+        <span class="caption" data-a style="--d:.3s">Chapter 03 · The Squad</span>
+      </div>
+      <div class="clouds">
+        <div class="panel" data-a style="--d:.15s; --c:var(--sky-3)"><div class="badge">💼</div><h3>Sales Cloud</h3><p>Track leads, close deals, and forecast like a pro.</p></div>
+        <div class="panel" data-a style="--d:.25s; --c:var(--p-red)"><div class="badge">🎧</div><h3>Service Cloud</h3><p>Support on phone, email, chat, and social.</p></div>
+        <div class="panel" data-a style="--d:.35s; --c:var(--p-yellow)"><div class="badge">📣</div><h3>Marketing Cloud</h3><p>Personalized campaigns and customer journeys.</p></div>
+        <div class="panel" data-a style="--d:.45s; --c:var(--p-green)"><div class="badge">🛍️</div><h3>Commerce Cloud</h3><p>Online storefronts for B2C and B2B.</p></div>
+        <div class="panel" data-a style="--d:.55s; --c:var(--p-purple)"><div class="badge">🌐</div><h3>Experience Cloud</h3><p>Portals for customers, partners, and employees.</p></div>
+        <div class="panel" data-a style="--d:.65s; --c:var(--p-orange)"><div class="badge">📊</div><h3>Tableau</h3><p>Turn data into beautiful, useful insights.</p></div>
+        <div class="panel" data-a style="--d:.75s; --c:var(--p-pink)"><div class="badge">#️⃣</div><h3>Slack</h3><p>Team chat connected to CRM data (since 2021).</p></div>
+        <div class="panel feature" data-a="spin" style="--d:.9s; --t:rotate(2deg)"><div class="title">7 Clouds,<br>1 Platform!</div></div>
+      </div>
+      <span class="page-no">05</span>
+    </section>
+
+    <!-- 6 · PLATFORM -->
+    <section class="slide" aria-label="The Platform">
+      <div class="header">
+        <h2 class="title blue" data-a="up">Clicks vs. Code</h2>
+        <span class="caption" data-a style="--d:.3s">Chapter 04 · The Platform</span>
+      </div>
+      <div class="versus">
+        <div class="panel clicks" data-a="up" style="--d:.2s">
+          <div class="side-title">🖱️ Clicks</div>
+          <div class="side-sub">No-code / low-code tools for admins</div>
+          <ul>
+            <li><span class="dot" style="--c:var(--p-yellow)">⚙️</span><span><b>Flow Builder</b>Automate processes visually</span></li>
+            <li><span class="dot" style="--c:var(--p-green)">🧱</span><span><b>Object Manager</b>Custom objects, fields, and relationships</span></li>
+            <li><span class="dot" style="--c:var(--p-red)">🎨</span><span><b>Lightning App Builder</b>Drag-and-drop page design</span></li>
+          </ul>
+        </div>
+        <div class="vs"><div class="burst-wrap" data-a="spin" style="--d:.6s"><div class="burst back"></div><div class="burst front">VS</div></div></div>
+        <div class="panel code" data-a="up" style="--d:.4s">
+          <div class="side-title">👩‍💻 Code</div>
+          <div class="side-sub" style="opacity:.8">Pro-code tools for developers</div>
+          <ul>
+            <li><span class="dot">☕</span><span><b>Apex</b>Object-oriented language similar to Java</span></li>
+            <li><span class="dot">⚡</span><span><b>Lightning Web Components</b>Modern UI built on web standards</span></li>
+            <li><span class="dot">🔎</span><span><b>SOQL / SOSL</b>Query languages for Salesforce data</span></li>
+          </ul>
+          <div class="snippet"><span class="c">// SOQL: find my hottest leads</span><br><span class="k">SELECT</span> Name, Company <span class="k">FROM</span> Lead<br><span class="k">WHERE</span> Rating = <span class="s">'Hot'</span></div>
+        </div>
+      </div>
+      <div class="ribbon" data-a="up" style="--d:.9s"><span class="comic">🧩 AppExchange</span> Thousands of ready-made apps that extend Salesforce!</div>
+      <span class="page-no">06</span>
+    </section>
+
+    <!-- 7 · AI -->
+    <section class="slide sky" aria-label="AI Superpowers">
+      <div class="header">
+        <h2 class="title yellow" data-a="up">AI Superpowers!</h2>
+        <span class="caption" data-a style="--d:.3s">Chapter 05</span>
+      </div>
+      <div class="ai">
+        <div class="bot-col">
+          <div class="bubble" data-a style="--d:.8s">Beep boop! I don't just predict. I <u>act</u>! 🦾</div>
+          <svg class="bot" viewBox="0 0 200 240" height="360" data-a="spin" style="--d:.3s"><use href="#bot"/></svg>
+        </div>
+        <div class="cards">
+          <div class="panel card" data-a="up" style="--d:.5s; --c:var(--p-purple)">
+            <div class="em">🔮</div>
+            <div><h3>Einstein</h3><span class="chip tag">Predictive AI</span><p>Lead scoring, forecasts, and smart recommendations built right into your data.</p></div>
+          </div>
+          <div class="panel card" data-a="up" style="--d:.7s; --c:var(--p-green)">
+            <div class="em">🤖</div>
+            <div><h3>Agentforce</h3><span class="chip tag">Autonomous Agents</span><p>AI agents that answer customers, qualify leads, and finish multi-step tasks using your trusted data.</p></div>
+          </div>
+        </div>
+      </div>
+      <span class="page-no">07</span>
+    </section>
+
+    <!-- 8 · BENEFITS -->
+    <section class="slide sky" aria-label="Benefits">
+      <div class="cloud-deco" style="top:110px; animation-duration:60s; animation-delay:-20s; scale:.6; opacity:.4;"></div>
+      <div class="header">
+        <h2 class="title yellow" data-a="up">Power-Ups Unlocked!</h2>
+        <span class="caption" data-a style="--d:.3s">Chapter 06 · Key Benefits</span>
+      </div>
+      <div class="powerups">
+        <div class="pu" data-a="spin" style="--d:.2s; --c:var(--sun)"><div class="burst-wrap"><div class="burst back"></div><div class="burst front">📈</div></div><div class="label">Scalable</div><p>From tiny startups to global enterprises</p></div>
+        <div class="pu" data-a="spin" style="--d:.35s; --c:var(--p-red); --w:-.6s"><div class="burst-wrap"><div class="burst back"></div><div class="burst front">📱</div></div><div class="label">Anywhere</div><p>Any device with an internet connection</p></div>
+        <div class="pu" data-a="spin" style="--d:.5s; --c:var(--p-green); --w:-1.2s"><div class="burst-wrap"><div class="burst back"></div><div class="burst front">🎛️</div></div><div class="label">Custom</div><p>Tailored to your unique processes</p></div>
+        <div class="pu" data-a="spin" style="--d:.65s; --c:var(--p-purple); --w:-1.8s"><div class="burst-wrap"><div class="burst back"></div><div class="burst front">🔄</div></div><div class="label">Always New</div><p>3 major releases every year, automatically</p></div>
+        <div class="pu" data-a="spin" style="--d:.8s; --c:var(--p-orange); --w:-2.4s"><div class="burst-wrap"><div class="burst back"></div><div class="burst front">🫶</div></div><div class="label">Community</div><p>Millions of Trailblazers, partners, and experts</p></div>
+      </div>
+      <span class="page-no">08</span>
+    </section>
+
+    <!-- 9 · TRAILHEAD -->
+    <section class="slide" aria-label="Learning on Trailhead">
+      <div class="header">
+        <h2 class="title blue" data-a="up">Hit the Trail!</h2>
+        <span class="caption" data-a style="--d:.3s">Chapter 07 · Trailhead</span>
+      </div>
+      <div class="trail-wrap">
+        <svg class="trail" viewBox="0 0 1420 560" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M60 470 C 260 470, 260 260, 420 300 S 640 470, 780 330 S 960 100, 1120 210 S 1320 200, 1380 90"
+                fill="none" style="stroke:var(--navy)" stroke-width="34" stroke-linecap="round"/>
+          <path class="trail-path" d="M60 470 C 260 470, 260 260, 420 300 S 640 470, 780 330 S 960 100, 1120 210 S 1320 200, 1380 90"
+                fill="none" style="stroke:var(--sun)" stroke-width="20" stroke-linecap="round"/>
+          <path d="M60 470 C 260 470, 260 260, 420 300 S 640 470, 780 330 S 960 100, 1120 210 S 1320 200, 1380 90"
+                fill="none" style="stroke:var(--navy)" stroke-width="3" stroke-dasharray="14 18" stroke-linecap="round" opacity=".5"/>
+        </svg>
+        <div class="stop" data-a style="left:13%; top:72%; --d:.6s; --c:var(--sky-3)"><div class="flag">🛡️</div><div class="panel"><div class="lvl">Level 1</div><h4>Certified Administrator</h4></div></div>
+        <div class="stop" data-a style="left:38%; top:40%; --d:.9s; --c:var(--p-yellow)"><div class="flag">💻</div><div class="panel"><div class="lvl">Level 2</div><h4>Platform Developer I &amp; II</h4></div></div>
+        <div class="stop" data-a style="left:63%; top:74%; --d:1.2s; --c:var(--p-green)"><div class="flag">🧭</div><div class="panel"><div class="lvl">Level 3</div><h4>Sales / Service Cloud Consultant</h4></div></div>
+        <div class="stop" data-a style="left:83%; top:58%; --d:1.5s; --c:var(--p-purple)"><div class="flag">🏆</div><div class="panel"><div class="lvl">Bonus Level</div><h4>Certified AI Associate</h4></div></div>
+        <div class="trail-tip" data-a style="--d:1.8s; --t:rotate(2deg)">
+          <div class="bubble tail-right">🚀 Tip: Start with the free <b>Admin Beginner</b> trail on Trailhead!</div>
+        </div>
+      </div>
+      <span class="page-no">09</span>
+    </section>
+
+    <!-- 10 · FINALE -->
+    <section class="slide sky" aria-label="Finale">
+      <div class="cloud-deco" style="top:70px; animation-duration:44s; animation-delay:-8s; scale:.8;"></div>
+      <div class="cloud-deco" style="top:780px; animation-duration:58s; animation-delay:-36s; scale:.6;"></div>
+      <div class="finale">
+        <div style="display:grid; justify-items:center;">
+          <div class="burst-wrap" data-a="spin" style="--d:.2s">
+            <div class="burst back"></div>
+            <div class="burst front"><div><div class="title">The End?</div><div class="small">…or just the beginning! ✨</div></div></div>
+          </div>
+        </div>
+        <div>
+          <span class="caption" data-a style="--d:.4s">Chapter 08 · The Grand Finale</span>
+          <ul>
+            <li data-a="up" style="--d:.6s"><span class="ck">✓</span><span>Connect with customers better</span></li>
+            <li data-a="up" style="--d:.75s"><span class="ck">✓</span><span>Automate and streamline work</span></li>
+            <li data-a="up" style="--d:.9s"><span class="ck">✓</span><span>Grow your business at scale</span></li>
+          </ul>
+          <div class="thanks">
+            <svg class="mascot" width="220" height="160" data-a="spin" style="--d:1.1s"><use href="#cloudy"/></svg>
+            <div class="bubble" data-a style="--d:1.3s">Thanks for reading! 👋<br>See you in the cloud!</div>
+          </div>
+        </div>
+      </div>
+      <span class="page-no">10</span>
+    </section>
+
+    <!-- 11 · BONUS: PONG -->
+    <section class="slide" aria-label="Bonus: Cloud Pong">
+      <div class="header">
+        <h2 class="title yellow" data-a="up">Bonus Level: Cloud Pong!</h2>
+        <span class="caption" data-a style="--d:.3s">Play time · First to 5 wins</span>
+      </div>
+      <div class="pong">
+        <div class="panel pong-court" data-a="up" style="--d:.2s">
+          <canvas id="pong" aria-label="Pong game. Use the up and down arrow keys to move your paddle, and Space to start or pause."></canvas>
+        </div>
+        <div class="pong-side">
+          <div class="panel" data-a style="--d:.4s; --t:rotate(1deg)">
+            <h3>How to Play</h3>
+            <ul class="keys">
+              <li><span class="key">↑</span><span class="key">↓</span><p>Move your paddle</p></li>
+              <li><span class="key wide">Space</span><p>Start / pause</p></li>
+            </ul>
+          </div>
+          <div class="panel" data-a style="--d:.55s; --t:rotate(-1deg)">
+            <h3>Bot Difficulty</h3>
+            <div class="seg" id="pongLevels">
+              <button data-level="easy">Easy</button><button data-level="normal" class="on">Normal</button><button data-level="hard">Hard</button>
+            </div>
+          </div>
+          <div class="pong-taunt" data-a style="--d:.75s">
+            <div class="bubble tail-right">Think you can beat me? 🤖</div>
+            <svg viewBox="0 0 200 240" height="96" aria-hidden="true"><use href="#bot"/></svg>
+          </div>
+        </div>
+      </div>
+      <span class="page-no">11</span>
+    </section>
+
+  </main>
+</div>
+
+<div class="side-hotspot" id="sideHotspot" aria-hidden="true"></div>
+<button class="side-tab" id="sideTab" aria-label="Open the slide sorter">▸ Slides</button>
+<aside class="sidebar" id="sidebar" aria-label="Slide sorter">
+  <div class="side-head">
+    <div><h2 class="comic">Slides</h2><small id="sideCount"></small></div>
+    <button class="pin" id="pinBtn" aria-pressed="false" title="Keep the sidebar open">📌</button>
+  </div>
+  <p class="side-hint">Drag a card onto another to swap them · tick <b>Skip</b> to hide a slide from the show</p>
+  <div class="side-list" id="sideList"></div>
+</aside>
+
+<section class="chat" id="chat" aria-label="Chat about the slides">
+  <div class="chat-head">
+    <svg viewBox="0 0 200 240" height="46" aria-hidden="true"><use href="#bot"/></svg>
+    <div class="grow"><h3>Ask the Bot</h3><small>Ask anything · Deck: <span id="chatTopic"></span></small></div>
+    <button id="chatClear" title="New chat" aria-label="Start a new chat">🧹</button>
+    <button id="chatClose" title="Close (Esc)" aria-label="Close the chat">✕</button>
+  </div>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
+  <form class="chat-form" id="chatForm" autocomplete="off">
+    <textarea id="chatInput" rows="1" placeholder="Ask me anything…" aria-label="Your question"></textarea>
+    <button id="chatSend" type="submit" aria-label="Send">➤</button>
+  </form>
+</section>
+
+<div class="theme-menu" id="themeMenu" role="dialog" aria-label="Choose a theme">
+  <h3 class="comic">🎨 Pick a Theme</h3>
+  <div class="theme-grid" id="themeGrid"></div>
+</div>
+
+<nav class="controls" aria-label="Slide controls">
+  <button id="prev" aria-label="Previous slide">◀</button>
+  <span class="count" id="count">1 / 12</span>
+  <button id="next" aria-label="Next slide">▶</button>
+  <button id="fs" class="fs" aria-label="Toggle fullscreen" title="Fullscreen (F)">⛶</button>
+  <button id="sideBtn" class="fs" aria-label="Show the slide sorter" title="Slides (S)">🗂️</button>
+  <button id="themeBtn" class="fs" aria-label="Choose a theme" title="Themes (T)">🎨</button>
+  <button id="chatBtn" class="fs" aria-label="Ask the bot anything" title="Ask the bot (C)">💬</button>
+  <span class="sep"></span>
+  <button id="edit" class="pill" title="Edit slide text (E)">✏️ Edit</button>
+  <button id="save" class="pill save" title="Save changes (⌘/Ctrl + S)">💾 Save</button>
+  <button id="cancel" class="pill ghost" title="Discard unsaved changes">Cancel</button>
+  <button id="reset" class="pill ghost icon-only" title="Restore the original text" aria-label="Restore the original text">↺</button>
+</nav>
+
+<div class="edit-banner" role="status">
+  <span class="comic">✏️ Edit Mode</span>
+  Click any text to change it · <kbd>⌘S</kbd> save · <kbd>Esc</kbd> done typing
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  const stage = document.getElementById('stage');
+  let slides = [...stage.querySelectorAll('.slide')];
+  const count = document.getElementById('count');
+  const progress = document.getElementById('progress');
+  let current = 0;
+
+  function fit() {
+    const s = Math.min(window.innerWidth / 1600, window.innerHeight / 900) * 0.96;
+    stage.style.setProperty('--scale', s);
+  }
+
+  function go(i) {
+    if (stage.contains(document.activeElement)) document.activeElement.blur();
+    current =Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, n) => s.classList.toggle('active', n === current));
+    updateStatus();
+    pong.sync();
+    history.replaceState(null, '', `#${current + 1}`);
+  }
+
+  const isSkipped = s => s.classList.contains('skipped');
+  const visibleSlides = () => slides.filter(s => !isSkipped(s));
+
+  // Move to the nearest slide in a direction that isn't skipped
+  function step(dir) {
+    for (let i = current + dir; i >= 0 && i < slides.length; i += dir) {
+      if (!isSkipped(slides[i])) return go(i);
+    }
+  }
+
+  function updateStatus() {
+    const vis = visibleSlides();
+    const pos = vis.indexOf(slides[current]);
+    count.textContent = pos < 0 ? 'Skipped' : `${pos + 1} / ${vis.length}`;
+    progress.style.width = `${pos < 0 ? 0 : ((pos + 1) / vis.length) * 100}%`;
+    vis.forEach((s, i) => {
+      const no = s.querySelector('.page-no');
+      if (no) no.textContent = String(i + 1).padStart(2, '0');
+    });
+    sideCards().forEach(c => c.classList.toggle('current', c.dataset.sid === slides[current].dataset.sid));
+  }
+
+  document.getElementById('prev').onclick = () => step(-1);
+  document.getElementById('next').onclick = () => step(1);
+  document.getElementById('fs').onclick = toggleFs;
+
+  function toggleFs() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+
+  // ---------- Inline editing ----------
+  const EDITABLE = [
+    '.title', '.sub', '.caption', '.press', '.bubble', '.chip', '.hub-label', '.ribbon',
+    '.stage h3', '.stage h4', '.stage p', '.agenda .num', '.agenda .icon',
+    '.strip .art', '.stat-big', '.strip .burst.front', '.vs .burst.front', '.pu .burst.front',
+    '.crm .ico', '.clouds .badge', '.ai .em', '.stop .flag', '.lvl', '.label',
+    '.side-title', '.side-sub', '.versus .dot', '.versus li > span:last-child',
+    '.snippet', '.finale .small', '.finale li > span:last-child'
+  ].join(',');
+  const STORE_KEY = 'sf-comic-deck-edits-v1';
+  // The AI slide is a form, not content, so it stays out of edit mode
+  const editables = [...stage.querySelectorAll(EDITABLE)].filter(el => !el.closest('.s-gen'));
+  editables.forEach((el, i) => { el.dataset.eid = i; el.spellcheck = false; });
+  const originals = editables.map(el => el.innerHTML);
+  let snapshot = [];
+  let editing = false;
+  let dirty = false;
+
+  const toastEl = document.getElementById('toast');
+  let toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800);
+  }
+
+  function setDirty(v) {
+    dirty = v;
+    document.body.classList.toggle('dirty', v);
+  }
+
+  function setEditing(on) {
+    editing = on;
+    document.body.classList.toggle('editing', on);
+    editables.forEach(el => on ? el.setAttribute('contenteditable', 'true') : el.removeAttribute('contenteditable'));
+    if (!on && document.activeElement?.isContentEditable) document.activeElement.blur();
+  }
+
+  function startEdit() {
+    snapshot = editables.map(el => el.innerHTML);
+    setDirty(false);
+    setEditing(true);
+    // Drop the caret into the slide's main heading so typing can start right away
+    const first = slides[current].querySelector('[data-eid]');
+    if (first) {
+      first.focus();
+      const range = document.createRange();
+      range.selectNodeContents(first);
+      range.collapse(false);
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+    }
+  }
+
+  // Store every field that differs from the original; throws if storage is blocked
+  function persistEdits() {
+    const changed = {};
+    editables.forEach((el, i) => { if (el.innerHTML !== originals[i]) changed[i] = el.innerHTML; });
+    if (Object.keys(changed).length) localStorage.setItem(STORE_KEY, JSON.stringify(changed));
+    else localStorage.removeItem(STORE_KEY);
+  }
+
+  function save() {
+    try {
+      persistEdits();
+      toast('Saved! ✨');
+    } catch {
+      toast("Couldn't save: browser storage is blocked");
+      return;
+    }
+    setDirty(false);
+    setEditing(false);
+  }
+
+  function cancel() {
+    editables.forEach((el, i) => { el.innerHTML = snapshot[i]; });
+    if (dirty) toast('Changes discarded');
+    setDirty(false);
+    setEditing(false);
+  }
+
+  function resetAll() {
+    if (!confirm('Restore every slide to its original text? Your saved edits will be removed.')) return;
+    editables.forEach((el, i) => { el.innerHTML = originals[i]; });
+    Object.entries(originalNames).forEach(([sid, name]) => setSlideName(sid, name));
+    try { [STORE_KEY, NAMES_KEY, TOPIC_KEY].forEach(k => localStorage.removeItem(k)); } catch {}
+    deckTopic = 'Salesforce';
+    chat.reset();
+    snapshot = [...originals];
+    setDirty(false);
+    toast('Back to the original ↺');
+  }
+
+  function loadSaved() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+      for (const [i, html] of Object.entries(saved)) if (editables[i]) editables[i].innerHTML = html;
+    } catch {}
+  }
+
+  document.getElementById('edit').onclick = startEdit;
+  document.getElementById('save').onclick = save;
+  document.getElementById('cancel').onclick = cancel;
+  document.getElementById('reset').onclick = resetAll;
+
+  stage.addEventListener('input', e => { if (e.target.isContentEditable) setDirty(true); });
+
+  // Paste as plain text so outside styling never leaks into the comic look
+  stage.addEventListener('paste', e => {
+    if (!e.target.closest('[contenteditable]')) return;
+    e.preventDefault();
+    document.execCommand('insertText', false, e.clipboardData.getData('text/plain'));
+  });
+
+  // Enter makes a clean line break instead of a new <div>
+  stage.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.isContentEditable) {
+      e.preventDefault();
+      document.execCommand('insertLineBreak');
+    }
+  });
+
+  window.addEventListener('beforeunload', e => { if (dirty) e.preventDefault(); });
+
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      if (editing) save();
+      return;
+    }
+    if (e.target.isContentEditable) {
+      if (e.key === 'Escape') e.target.blur();
+      return; // typing: leave every other key to the text
+    }
+    if (e.target.matches('input:not([type="checkbox"]), textarea')) {
+      if (e.key === 'Escape') e.target.id === 'chatInput' ? chat.open(false) : e.target.blur();
+      return; // same for form fields (AI slide, chat box)
+    }
+    if (e.key === 'Escape' && document.body.classList.contains('chat-open')) { chat.open(false); return; }
+    if (e.key === 'Escape' && document.body.matches('.theme-open, .side-open')) {
+      document.body.classList.remove('theme-open');
+      if (!pinned) setSidebar(false);
+      return;
+    }
+    if (e.key === 'Escape' && editing) { dirty ? save() : setEditing(false); return; }
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (pong.handleKey(e)) return;
+    if ([' ', 'Enter'].includes(e.key) && e.target.closest('button, input, label, summary')) return;
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); step(1); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); step(-1); }
+    else if (e.key === 'Home') { current = -1; step(1); }
+    else if (e.key === 'End') { current = slides.length; step(-1); }
+    else if (e.key.toLowerCase() === 'f') toggleFs();
+    else if (e.key.toLowerCase() === 's') setSidebar(!document.body.classList.contains('side-open'));
+    else if (e.key.toLowerCase() === 't') document.body.classList.toggle('theme-open');
+    else if (e.key.toLowerCase() === 'e' && !editing) { e.preventDefault(); startEdit(); }
+    else if (e.key.toLowerCase() === 'c') { e.preventDefault(); chat.toggle(); }
+  });
+
+  loadSaved();
+
+  let touchX = null;
+  document.addEventListener('touchstart', e => {
+    touchX = e.target.isContentEditable || e.target.closest('#pong, input') ? null : e.touches[0].clientX;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) go(current + (dx < 0 ? 1 : -1));
+    touchX = null;
+  });
+
+  // Hide controls when the mouse is idle
+  let idleTimer;
+  document.addEventListener('mousemove', () => {
+    document.body.classList.remove('idle');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => document.body.classList.add('idle'), 2500);
+  });
+
+  // ---------- Slide sorter sidebar ----------
+  const LAYOUT_KEY = 'sf-comic-deck-layout-v2'; // v2: slide ids shifted when the AI slide was added
+  const NAMES_KEY = 'sf-comic-deck-names-v1';
+  const sidebar = document.getElementById('sidebar');
+  const sideList = document.getElementById('sideList');
+  const sideCount = document.getElementById('sideCount');
+  const pinBtn = document.getElementById('pinBtn');
+  slides.forEach((s, i) => { s.dataset.sid = i; });
+  const slideBySid = Object.fromEntries(slides.map(s => [s.dataset.sid, s]));
+  const originalNames = Object.fromEntries(slides.map(s => [s.dataset.sid, s.getAttribute('aria-label')]));
+  let pinned = false;
+
+  // Slide names (shown in the sidebar) can be rewritten by the AI generator
+  function setSlideName(sid, name) {
+    slideBySid[sid].setAttribute('aria-label', name);
+    const label = sideList.querySelector(`:scope > [data-sid="${sid}"] .s-name`);
+    if (label) label.textContent = name;
+  }
+  try {
+    const savedNames = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
+    Object.entries(savedNames).forEach(([sid, name]) => { if (slideBySid[sid]) setSlideName(sid, name); });
+  } catch {}
+  let closeTimer;
+
+  function sideCards() { return [...sideList.children]; }
+
+  function buildSidebar() {
+    slides.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 's-card';
+      card.dataset.sid = s.dataset.sid;
+      card.innerHTML = `
+        <div class="s-top">
+          <span class="grip" aria-hidden="true">⠿</span>
+          <span class="s-num"></span>
+          <span class="s-name"></span>
+          <label class="skip"><input type="checkbox"><span>Skip</span></label>
+        </div>
+        <div class="thumb-wrap"><div class="thumb" aria-hidden="true"></div><span class="stamp">Skipped</span></div>`;
+      card.querySelector('.s-name').textContent = s.getAttribute('aria-label');
+      sideList.appendChild(card);
+    });
+  }
+
+  // Thumbnails are live clones of the slides, so they reflect edits and the current theme
+  function refreshThumbs() {
+    const wrap = sideList.querySelector('.thumb-wrap');
+    if (wrap) sideList.style.setProperty('--ts', wrap.clientWidth / 1600);
+    sideCards().forEach(card => {
+      const clone = slideBySid[card.dataset.sid].cloneNode(true);
+      clone.classList.add('active');
+      clone.removeAttribute('data-sid');
+      clone.removeAttribute('aria-label');
+      clone.inert = true;
+      clone.querySelectorAll('[data-eid]').forEach(el => {
+        el.removeAttribute('data-eid');
+        el.removeAttribute('contenteditable');
+      });
+      const liveCanvas = slideBySid[card.dataset.sid].querySelector('canvas');
+      if (liveCanvas) clone.querySelector('canvas').getContext('2d').drawImage(liveCanvas, 0, 0);
+      card.querySelector('.thumb').replaceChildren(clone);
+    });
+  }
+
+  function refreshSidebar() {
+    sideCards().forEach((card, i) => {
+      const skipped = isSkipped(slideBySid[card.dataset.sid]);
+      card.classList.toggle('skipped', skipped);
+      card.querySelector('input').checked = skipped;
+      card.querySelector('.s-num').textContent = String(i + 1).padStart(2, '0');
+    });
+    sideCount.textContent = `${visibleSlides().length} of ${slides.length} slides in the show`;
+    updateStatus();
+  }
+
+  function applyOrder(order) {
+    order.forEach(sid => stage.appendChild(slideBySid[sid]));
+    slides = order.map(sid => slideBySid[sid]);
+  }
+
+  function saveLayout() {
+    try {
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify({
+        order: slides.map(s => s.dataset.sid),
+        skipped: slides.filter(isSkipped).map(s => s.dataset.sid)
+      }));
+    } catch {}
+  }
+
+  function loadLayout() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(LAYOUT_KEY) || 'null');
+      if (!saved) return;
+      const order = [...new Set(saved.order)].filter(sid => slideBySid[sid]);
+      // Slides added since the layout was saved go at the end
+      slides.forEach(s => { if (!order.includes(s.dataset.sid)) order.push(s.dataset.sid); });
+      applyOrder(order);
+      saved.skipped.forEach(sid => slideBySid[sid]?.classList.add('skipped'));
+      if (!visibleSlides().length) slides.forEach(s => s.classList.remove('skipped'));
+    } catch {}
+  }
+
+  function swapSlides(sidA, sidB) {
+    const shown = slides[current];
+    const before = new Map(sideCards().map(c => [c, c.getBoundingClientRect()]));
+    const order = slides.map(s => s.dataset.sid);
+    const a = order.indexOf(sidA), b = order.indexOf(sidB);
+    [order[a], order[b]] = [order[b], order[a]];
+    applyOrder(order);
+    order.forEach(sid => sideList.appendChild(sideList.querySelector(`:scope > [data-sid="${sid}"]`)));
+    current = slides.indexOf(shown);
+    // FLIP: slide each card from its old spot to its new one
+    before.forEach((r, card) => {
+      const now = card.getBoundingClientRect();
+      const dx = r.left - now.left, dy = r.top - now.top;
+      if (dx || dy) {
+        card.animate(
+          [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }],
+          { duration: 450, easing: 'cubic-bezier(.34,1.4,.64,1)' }
+        );
+      }
+    });
+    refreshSidebar();
+    saveLayout();
+    history.replaceState(null, '', `#${current + 1}`);
+    toast('Swapped! 🔄');
+  }
+
+  function setSidebar(open) {
+    clearTimeout(closeTimer);
+    if (open && !document.body.classList.contains('side-open')) refreshThumbs();
+    document.body.classList.toggle('side-open', open);
+  }
+
+  // Auto-hide: open when the mouse touches the left edge, close shortly after it leaves
+  document.getElementById('sideHotspot').addEventListener('pointerenter', () => setSidebar(true));
+  document.getElementById('sideTab').onclick = () => setSidebar(true);
+  document.getElementById('sideBtn').onclick = () => setSidebar(!document.body.classList.contains('side-open'));
+  sidebar.addEventListener('pointerenter', () => clearTimeout(closeTimer));
+  sidebar.addEventListener('pointerleave', e => {
+    if (pinned || drag || e.pointerType !== 'mouse') return;
+    closeTimer = setTimeout(() => setSidebar(false), 450);
+  });
+  pinBtn.onclick = () => {
+    pinned = !pinned;
+    sidebar.classList.toggle('pinned', pinned);
+    pinBtn.setAttribute('aria-pressed', pinned);
+    toast(pinned ? 'Sidebar pinned 📌' : 'Sidebar will auto-hide');
+  };
+
+  // Drag a card onto another to swap (mouse: whole card; touch: the ⠿ grip)
+  let drag = null;
+  let justDragged = false;
+
+  sideList.addEventListener('pointerdown', e => {
+    const card = e.target.closest('.s-card');
+    if (!card || e.button !== 0 || e.target.closest('.skip')) return;
+    if (e.pointerType !== 'mouse' && !e.target.closest('.grip')) return;
+    drag = { card, id: e.pointerId, x: e.clientX, y: e.clientY, ghost: null, target: null };
+  });
+
+  window.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.ghost) {
+      if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+      const r = drag.card.getBoundingClientRect();
+      drag.dx = drag.x - r.left;
+      drag.dy = drag.y - r.top;
+      drag.ghost = drag.card.cloneNode(true);
+      drag.ghost.classList.add('s-ghost');
+      drag.ghost.classList.remove('current');
+      drag.ghost.style.width = `${r.width}px`;
+      drag.ghost.style.setProperty('--ts', sideList.style.getPropertyValue('--ts'));
+      document.body.appendChild(drag.ghost);
+      drag.card.classList.add('dragging');
+      document.body.classList.add('sorting');
+    }
+    e.preventDefault();
+    drag.ghost.style.left = `${e.clientX - drag.dx}px`;
+    drag.ghost.style.top = `${e.clientY - drag.dy}px`;
+
+    const over = document.elementFromPoint(e.clientX, e.clientY)?.closest('.s-card');
+    const target = over && over !== drag.card && over.parentElement === sideList ? over : null;
+    if (target !== drag.target) {
+      drag.target?.classList.remove('drop-target');
+      target?.classList.add('drop-target');
+      drag.target = target;
+    }
+    const lr = sideList.getBoundingClientRect();
+    if (e.clientY < lr.top + 60) sideList.scrollTop -= 14;
+    else if (e.clientY > lr.bottom - 60) sideList.scrollTop += 14;
+  });
+
+  function endDrag(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    const { card, ghost, target } = drag;
+    drag = null;
+    if (!ghost) return;
+    justDragged = true;
+    setTimeout(() => { justDragged = false; }, 0);
+    card.classList.remove('dragging');
+    document.body.classList.remove('sorting');
+    if (target) {
+      target.classList.remove('drop-target');
+      // Fly the ghost into the target's spot, then swap
+      const tr = target.getBoundingClientRect();
+      ghost.animate(
+        [{ left: ghost.style.left, top: ghost.style.top }, { left: `${tr.left}px`, top: `${tr.top}px`, transform: 'none', opacity: .4 }],
+        { duration: 180, easing: 'ease-out' }
+      ).onfinish = () => ghost.remove();
+      swapSlides(card.dataset.sid, target.dataset.sid);
+    } else {
+      ghost.remove();
+    }
+  }
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+
+  sideList.addEventListener('click', e => {
+    if (justDragged || e.target.closest('.skip')) return;
+    const card = e.target.closest('.s-card');
+    if (card) go(slides.indexOf(slideBySid[card.dataset.sid]));
+  });
+
+  sideList.addEventListener('change', e => {
+    const card = e.target.closest('.s-card');
+    if (!card) return;
+    if (e.target.checked && visibleSlides().length === 1 && !isSkipped(slideBySid[card.dataset.sid])) {
+      e.target.checked = false;
+      toast('Keep at least one slide! 🙃');
+      return;
+    }
+    slideBySid[card.dataset.sid].classList.toggle('skipped', e.target.checked);
+    refreshSidebar();
+    saveLayout();
+    toast(e.target.checked ? 'Slide skipped ⏭️' : 'Slide is back in the show ✅');
+  });
+
+  // ---------- Theme picker ----------
+  const THEME_KEY = 'sf-comic-deck-theme';
+  const THEMES = [
+    { id: 'cloud', name: 'Cloud Comic', tag: 'Classic sky-blue adventure' },
+    { id: 'neon', name: 'Midnight Neon', tag: 'Electric arcade nights' },
+    { id: 'retro', name: 'Retro Pop', tag: 'Sunset-orange pop art' },
+    { id: 'jungle', name: 'Emerald Jungle', tag: 'Fresh, leafy energy' },
+    { id: 'noir', name: 'Noir & Gold', tag: 'Black-tie luxury edition' }
+  ];
+  const themeGrid = document.getElementById('themeGrid');
+  themeGrid.innerHTML = THEMES.map(t => `
+    <button class="theme-opt" data-theme="${t.id}" data-pick="${t.id}">
+      <span class="sw-art">
+        <span class="sw-dot" style="left:10px; background:var(--sun)"></span>
+        <span class="sw-dot" style="left:32px; background:var(--coral)"></span>
+        <span class="sw-dot" style="left:54px; background:var(--mint)"></span>
+        <span class="sw-paper"></span>
+        <span class="sw-check">✓</span>
+      </span>
+      <span class="sw-name">${t.name}</span>
+      <span class="sw-tag">${t.tag}</span>
+    </button>`).join('');
+
+  function applyTheme(id, animate) {
+    const set = () => {
+      document.documentElement.dataset.theme = id;
+      themeGrid.querySelectorAll('.theme-opt').forEach(b => b.classList.toggle('on', b.dataset.pick === id));
+    };
+    if (animate && document.startViewTransition) document.startViewTransition(set);
+    else set();
+    try { localStorage.setItem(THEME_KEY, id); } catch {}
+  }
+
+  themeGrid.addEventListener('click', e => {
+    const opt = e.target.closest('.theme-opt');
+    if (!opt) return;
+    applyTheme(opt.dataset.pick, true);
+    toast(`${THEMES.find(t => t.id === opt.dataset.pick).name} 🎨`);
+  });
+  document.getElementById('themeBtn').onclick = () => document.body.classList.toggle('theme-open');
+
+  // Close the popovers when clicking elsewhere
+  document.addEventListener('pointerdown', e => {
+    if (!e.target.closest('.theme-menu, #themeBtn')) document.body.classList.remove('theme-open');
+    if (!pinned && document.body.classList.contains('side-open') &&
+        !e.target.closest('.sidebar, .controls, .side-tab, .side-hotspot')) setSidebar(false);
+  });
+
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem(THEME_KEY); } catch {}
+  applyTheme(THEMES.some(t => t.id === savedTheme) ? savedTheme : 'cloud', false);
+
+  // ---------- Bonus slide: Cloud Pong ----------
+  const pong = (() => {
+    const canvas = document.getElementById('pong');
+    const ctx = canvas.getContext('2d');
+    const slide = canvas.closest('.slide');
+    const W = 1000, H = 560, PW = 18, PH = 110, R = 12, WIN = 5;
+    const PX = 34, BX = W - 34 - PW;
+    const PLAYER_SPEED = 640;
+    const LEVELS = { easy: { ai: 290, err: 55 }, normal: { ai: 430, err: 28 }, hard: { ai: 620, err: 10 } };
+    const WORDS = ['POW!', 'BAM!', 'ZAP!', 'WHAM!', 'BOOM!', 'KAPOW!'];
+    canvas.width = W * 2;
+    canvas.height = H * 2;
+    ctx.scale(2, 2);
+
+    // Halftone dots, rendered once and reused as a fill pattern
+    const dotTile = document.createElement('canvas');
+    dotTile.width = dotTile.height = 18;
+    const dctx = dotTile.getContext('2d');
+    dctx.fillStyle = 'rgba(255,255,255,.16)';
+    dctx.beginPath(); dctx.arc(9, 9, 1.8, 0, Math.PI * 2); dctx.fill();
+    const dots = ctx.createPattern(dotTile, 'repeat');
+
+    let level = 'normal';
+    let state = 'ready'; // ready | playing | paused | over
+    let winner = null;
+    const keys = { up: false, down: false };
+    let pointerY = null;
+    let player, bot, ball, score, fx, shake, aiErr, last, raf = 0;
+
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const isActive = () => slide.classList.contains('active');
+
+    function palette() {
+      const cs = getComputedStyle(document.documentElement);
+      const v = n => cs.getPropertyValue(n).trim();
+      return {
+        a: v('--hero-a'), b: v('--hero-b'), c: v('--hero-c'), navy: v('--navy'), shadow: v('--shadow'),
+        sun: v('--sun'), coral: v('--coral'), mint: v('--mint')
+      };
+    }
+
+    function newGame() {
+      player = { y: H / 2 - PH / 2 };
+      bot = { y: H / 2 - PH / 2 };
+      score = { you: 0, bot: 0 };
+      fx = [];
+      shake = 0;
+      winner = null;
+      serve(Math.random() < .5 ? 1 : -1);
+    }
+
+    function serve(dir) {
+      const ang = Math.random() * .7 - .35;
+      ball = { x: W / 2, y: H / 2, speed: 470, vx: 0, vy: 0, wait: .8, dir, ang, trail: [] };
+      aiErr = (Math.random() * 2 - 1) * LEVELS[level].err;
+    }
+
+    function hit(paddle, dir, x) {
+      const rel = clamp((ball.y - (paddle.y + PH / 2)) / (PH / 2 + R), -1, 1);
+      const ang = rel * 0.95; // up to ~55°
+      ball.speed = Math.min(ball.speed * 1.06, 1150);
+      ball.vx = Math.cos(ang) * ball.speed * dir;
+      ball.vy = Math.sin(ang) * ball.speed;
+      ball.x = x;
+      shake = 9;
+      fx.push({ x, y: ball.y, word: WORDS[Math.floor(Math.random() * WORDS.length)], t: 0, mine: dir === 1 });
+      if (dir === 1) aiErr = (Math.random() * 2 - 1) * LEVELS[level].err;
+    }
+
+    function point(who) {
+      score[who]++;
+      shake = 16;
+      fx.push({ x: W / 2, y: H / 2, word: who === 'you' ? 'POINT!' : 'OOPS!', t: 0, big: true, mine: who === 'you' });
+      if (score[who] >= WIN) {
+        state = 'over';
+        winner = who;
+        toast(who === 'you' ? 'You win! 🏆' : 'The bot wins this time 🤖');
+      } else {
+        serve(who === 'you' ? 1 : -1);
+      }
+    }
+
+    function update(dt) {
+      // Player: arrow keys, or follow the pointer when dragging
+      if (keys.up) player.y -= PLAYER_SPEED * dt;
+      if (keys.down) player.y += PLAYER_SPEED * dt;
+      if (pointerY !== null) {
+        const step = PLAYER_SPEED * 1.5 * dt;
+        player.y += clamp(pointerY - PH / 2 - player.y, -step, step);
+      }
+      player.y = clamp(player.y, 0, H - PH);
+
+      // Bot: chases the ball when it's coming its way, otherwise drifts to centre
+      const aim = ball.vx > 0 ? ball.y + aiErr : H / 2;
+      const ai = LEVELS[level].ai * dt;
+      bot.y = clamp(bot.y + clamp(aim - (bot.y + PH / 2), -ai, ai), 0, H - PH);
+
+      if (ball.wait > 0) {
+        ball.wait -= dt;
+        if (ball.wait <= 0) {
+          ball.vx = Math.cos(ball.ang) * ball.speed * ball.dir;
+          ball.vy = Math.sin(ball.ang) * ball.speed;
+        }
+        return;
+      }
+
+      ball.trail.push({ x: ball.x, y: ball.y });
+      if (ball.trail.length > 10) ball.trail.shift();
+      ball.x += ball.vx * dt;
+      ball.y += ball.vy * dt;
+
+      if (ball.y < R) { ball.y = R; ball.vy = Math.abs(ball.vy); }
+      if (ball.y > H - R) { ball.y = H - R; ball.vy = -Math.abs(ball.vy); }
+
+      const inY = p => ball.y > p.y - R && ball.y < p.y + PH + R;
+      if (ball.vx < 0 && ball.x - R <= PX + PW && ball.x - R >= PX - 16 && inY(player)) hit(player, 1, PX + PW + R);
+      if (ball.vx > 0 && ball.x + R >= BX && ball.x + R <= BX + PW + 16 && inY(bot)) hit(bot, -1, BX - R);
+
+      if (ball.x < -R * 3) point('bot');
+      else if (ball.x > W + R * 3) point('you');
+    }
+
+    function outlined(text, x, y, size, fill, p, stroke = 8) {
+      ctx.font = `${size}px Bangers, cursive`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.fillStyle = p.shadow;
+      ctx.fillText(text, x + size / 20, y + size / 20);
+      ctx.lineWidth = stroke;
+      ctx.strokeStyle = p.navy;
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = fill;
+      ctx.fillText(text, x, y);
+    }
+
+    function rounded(x, y, w, h, r) {
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+      else ctx.rect(x, y, w, h);
+    }
+
+    function paddle(x, y, fill, p) {
+      ctx.fillStyle = p.shadow;
+      rounded(x + 5, y + 5, PW, PH, 9); ctx.fill();
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = p.navy;
+      ctx.lineWidth = 4;
+      rounded(x, y, PW, PH, 9); ctx.fill(); ctx.stroke();
+    }
+
+    function burst(x, y, r, fill, p) {
+      ctx.beginPath();
+      for (let i = 0; i < 20; i++) {
+        const a = (i / 20) * Math.PI * 2;
+        const rr = i % 2 ? r * .62 : r;
+        ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+      }
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = p.navy;
+      ctx.lineWidth = 4;
+      ctx.fill(); ctx.stroke();
+    }
+
+    function overlay(title, sub, p, fill) {
+      ctx.fillStyle = 'rgba(0,0,0,.28)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = p.shadow;
+      rounded(W / 2 - 300 + 8, H / 2 - 95 + 8, 600, 190, 22); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = p.navy;
+      ctx.lineWidth = 5;
+      rounded(W / 2 - 300, H / 2 - 95, 600, 190, 22); ctx.fill(); ctx.stroke();
+      outlined(title, W / 2, H / 2 - 22, 78, fill, p, 7);
+      ctx.font = '800 22px Nunito, sans-serif';
+      ctx.fillStyle = p.navy;
+      ctx.fillText(sub, W / 2, H / 2 + 52);
+    }
+
+    function draw() {
+      const p = palette();
+      ctx.save();
+      if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, p.a); g.addColorStop(.6, p.b); g.addColorStop(1, p.c);
+      ctx.fillStyle = g;
+      ctx.fillRect(-30, -30, W + 60, H + 60);
+      ctx.fillStyle = dots;
+      ctx.fillRect(-30, -30, W + 60, H + 60);
+
+      ctx.setLineDash([18, 16]);
+      ctx.strokeStyle = 'rgba(255,255,255,.55)';
+      ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke();
+      ctx.setLineDash([]);
+
+      outlined(String(score.you), W / 2 - 110, 74, 100, p.sun, p);
+      outlined(String(score.bot), W / 2 + 110, 74, 100, p.coral, p);
+      outlined('YOU', 100, 34, 30, '#fff', p, 6);
+      outlined('BOT', W - 100, 34, 30, '#fff', p, 6);
+
+      paddle(PX, player.y, p.sun, p);
+      paddle(BX, bot.y, p.coral, p);
+
+      ball.trail.forEach((t, i) => {
+        ctx.globalAlpha = (i + 1) / ball.trail.length * .35;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(t.x, t.y, R * (i + 1) / ball.trail.length, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      const pulse = ball.wait > 0 ? 1 + Math.sin(ball.wait * 20) * .15 : 1;
+      ctx.fillStyle = p.shadow;
+      ctx.beginPath(); ctx.arc(ball.x + 4, ball.y + 4, R * pulse, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = p.navy;
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(ball.x, ball.y, R * pulse, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      fx.forEach(f => {
+        const life = f.big ? 1 : .6;
+        const k = f.t / life;
+        const s = (f.big ? 1.3 : .8) * Math.min(1, k * 5) * (1 - k * .3);
+        ctx.globalAlpha = 1 - k * k;
+        ctx.save();
+        ctx.translate(f.x, f.y - k * 30);
+        ctx.rotate(-.12);
+        ctx.scale(s, s);
+        burst(0, 0, 70, f.mine ? p.sun : p.coral, p);
+        outlined(f.word, 0, 2, 34, '#fff', p, 6);
+        ctx.restore();
+      });
+      ctx.globalAlpha = 1;
+
+      if (state === 'ready') overlay('CLOUD PONG!', 'Press Space (or tap) to play · ↑ ↓ to move', p, p.sun);
+      else if (state === 'paused') overlay('PAUSED', 'Press Space to keep playing', p, p.sun);
+      else if (state === 'over') overlay(winner === 'you' ? 'YOU WIN! 🏆' : 'BOT WINS!', `${score.you} – ${score.bot} · Press Space for a rematch`, p, winner === 'you' ? p.sun : p.coral);
+      ctx.restore();
+    }
+
+    function frame(t) {
+      const dt = clamp((t - last) / 1000, 0, .033);
+      last = t;
+      if (state === 'playing') update(dt);
+      fx.forEach(f => { f.t += dt; });
+      fx = fx.filter(f => f.t < (f.big ? 1 : .6));
+      shake = Math.max(0, shake - dt * 60);
+      draw();
+      raf = isActive() ? requestAnimationFrame(frame) : 0;
+    }
+
+    function run() {
+      if (raf) return;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    }
+
+    function toggle() {
+      if (state === 'ready' || state === 'over') { newGame(); state = 'playing'; }
+      else state = state === 'playing' ? 'paused' : 'playing';
+      run();
+    }
+
+    document.getElementById('pongLevels').addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      level = b.dataset.level;
+      e.currentTarget.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      b.blur();
+      toast(`Bot set to ${b.textContent} 🤖`);
+    });
+
+    const toCourtY = e => {
+      const r = canvas.getBoundingClientRect();
+      return (e.clientY - r.top) / r.height * H;
+    };
+    canvas.addEventListener('pointerdown', e => {
+      if (state !== 'playing') { toggle(); return; }
+      canvas.setPointerCapture(e.pointerId);
+      pointerY = toCourtY(e);
+    });
+    canvas.addEventListener('pointermove', e => { if (pointerY !== null) pointerY = toCourtY(e); });
+    const release = () => { pointerY = null; };
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+
+    window.addEventListener('keyup', e => {
+      if (e.key === 'ArrowUp') keys.up = false;
+      if (e.key === 'ArrowDown') keys.down = false;
+    });
+
+    newGame();
+    if (document.fonts) document.fonts.ready.then(() => { if (!raf) draw(); });
+
+    return {
+      // Returns true when the key belongs to the game
+      handleKey(e) {
+        if (!isActive()) return false;
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          keys[e.key === 'ArrowUp' ? 'up' : 'down'] = true;
+          return true;
+        }
+        if (e.key === ' ' || e.key === 'Enter' || e.key.toLowerCase() === 'p') {
+          e.preventDefault();
+          toggle();
+          return true;
+        }
+        return false;
+      },
+      // Called on every slide change: pause when leaving, redraw when arriving
+      sync() {
+        keys.up = keys.down = false;
+        pointerY = null;
+        if (!isActive()) { if (state === 'playing') state = 'paused'; return; }
+        run();
+      }
+    };
+  })();
+
+  // ---------- Gemini (shared by the deck generator and the chat bot) ----------
+  const GEMINI_MODEL = 'gemini-3.5-flash-lite';
+  const GEMINI_API = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse`;
+  const KEY_STORE = 'sf-comic-deck-gemini-key';
+  const TOPIC_KEY = 'sf-comic-deck-topic';
+  let deckTopic = 'Salesforce';
+  try { deckTopic = localStorage.getItem(TOPIC_KEY) || deckTopic; } catch {}
+  const geminiKey = () => document.getElementById('genKey').value.trim();
+
+  function friendly(status, msg = '') {
+    if (status === 400 && /api key/i.test(msg)) return "That API key didn't work. Check it and try again.";
+    if (status === 401 || status === 403) return "This API key isn't allowed to use Gemini.";
+    if (status === 404) return `The model "${GEMINI_MODEL}" wasn't found for this key.`;
+    if (status === 429) return 'Gemini is busy or your quota ran out. Try again in a minute.';
+    if (status >= 500) return 'Gemini had a hiccup. Try again.';
+    return msg || `Request failed (${status}).`;
+  }
+
+  // Streams the reply (server-sent events) so the UI can follow the text as it arrives
+  async function stream(body, key, signal, onText) {
+    let res;
+    try {
+      res = await fetch(GEMINI_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify(body),
+        signal
+      });
+    } catch (err) {
+      if (err.name === 'AbortError') throw err;
+      throw new Error("Couldn't reach Gemini. Check your internet connection.");
+    }
+    if (!res.ok) {
+      let msg = '';
+      try { msg = (await res.json()).error?.message || ''; } catch {}
+      throw new Error(friendly(res.status, msg));
+    }
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buf = '', text = '', reason = '';
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += value;
+      let nl;
+      while ((nl = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line.startsWith('data:')) continue;
+        const chunk = JSON.parse(line.slice(5));
+        if (chunk.error) throw new Error(friendly(chunk.error.code, chunk.error.message));
+        if (chunk.promptFeedback?.blockReason) throw new Error('Gemini declined this request. Try asking differently.');
+        const cand = chunk.candidates?.[0];
+        text += (cand?.content?.parts || []).filter(p => !p.thought).map(p => p.text || '').join('');
+        if (cand?.finishReason) reason = cand.finishReason;
+        onText(text);
+      }
+    }
+    if (reason === 'SAFETY') throw new Error('Gemini declined this request. Try asking differently.');
+    return { text, reason };
+  }
+
+  // ---------- Chat bot (answers anything, citing the slides when relevant) ----------
+  const chat = (() => {
+    const log = document.getElementById('chatLog');
+    const chatForm = document.getElementById('chatForm');
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('chatSend');
+    const panel = document.getElementById('chat');
+    const MAX_TURNS = 12;
+    const IDEAS = ['Summarize the deck in 3 points', 'Explain slide 3 simply', 'Quiz me with one question'];
+    let history = [];
+    let ctrl = null;
+
+    const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // Tiny, safe markdown: escape everything, then add **bold**, `code`, "- " bullets and [Slide N] links
+    function render(text) {
+      const inline = s => esc(s)
+        .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\[Slide (\d+)\]/gi, '<button type="button" class="cite" data-n="$1">Slide $1</button>');
+      let html = '', list = false;
+      text.trim().split('\n').forEach(line => {
+        const item = line.match(/^\s*[-*•]\s+(.*)/);
+        if (item && !list) { html += '<ul>'; list = true; }
+        if (!item && list) { html += '</ul>'; list = false; }
+        if (item) html += `<li>${inline(item[1])}</li>`;
+        else if (line.trim()) html += `<p>${inline(line)}</p>`;
+      });
+      return html + (list ? '</ul>' : '');
+    }
+
+    // The slides as the viewer sees them right now (order, skips, edits and AI content included)
+    function deckText() {
+      const vis = visibleSlides();
+      return vis.filter(s => !s.classList.contains('s-gen') && !s.querySelector('#pong')).map(s => {
+        const lines = editables.filter(el => s.contains(el))
+          .map(el => el.textContent.replace(/\s+/g, ' ').trim())
+          .filter(Boolean);
+        return `[Slide ${vis.indexOf(s) + 1}] ${s.getAttribute('aria-label')}\n${lines.map(l => `- ${l}`).join('\n')}`;
+      }).join('\n\n');
+    }
+
+    function systemPrompt() {
+      return [
+        `You are a friendly, knowledgeable comic-book robot sidekick inside a slide deck about "${deckTopic}". You can answer any question on any subject, not just the deck.`,
+        '',
+        'Rules:',
+        '- Answer every question directly and helpfully from your own knowledge. Never refuse or hedge just because the slides don\'t mention something, and don\'t say what the slides do or don\'t cover.',
+        '- When the slides below are relevant, use them and cite them inline as [Slide N] with the numbers given. Only cite slides that actually support what you say.',
+        '- Keep answers short: 2-5 sentences, or up to 5 bullet points starting with "- ". Use **bold** for key terms. Upbeat and playful, at most one emoji.',
+        '- Be accurate. If something is uncertain or may have changed recently, say so briefly.',
+        '',
+        'Slides:',
+        deckText()
+      ].join('\n');
+    }
+
+    function add(cls, html) {
+      const msg = document.createElement('div');
+      msg.className = `msg ${cls}`;
+      msg.innerHTML = html;
+      log.appendChild(msg);
+      log.scrollTop = log.scrollHeight;
+      return msg;
+    }
+
+    function welcome() {
+      log.innerHTML = '';
+      document.getElementById('chatTopic').textContent = deckTopic;
+      add('bot', render(`Hi! Ask me anything, about **${deckTopic}** or the wider world. When the slides help, I'll point you to them. 💬`));
+      const ideas = document.createElement('div');
+      ideas.className = 'chat-ideas';
+      IDEAS.forEach(q => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = q;
+        ideas.appendChild(b);
+      });
+      log.appendChild(ideas);
+    }
+
+    function setBusy(on) {
+      panel.classList.toggle('busy', on);
+      sendBtn.textContent = on ? '■' : '➤';
+      sendBtn.setAttribute('aria-label', on ? 'Stop answering' : 'Send');
+    }
+
+    function autosize() {
+      input.style.height = 'auto';
+      input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+      input.style.overflowY = input.scrollHeight > 120 ? 'auto' : 'hidden';
+    }
+
+    async function send(text) {
+      text = text.trim();
+      if (!text || ctrl) return;
+      log.querySelector('.chat-ideas')?.remove();
+      add('user', `<p>${esc(text).replace(/\n/g, '<br>')}</p>`);
+      input.value = '';
+      autosize();
+      const key = geminiKey();
+      if (!key) {
+        add('bot error', render('I need a Gemini API key first. Add it on [Slide 1] and ask me again!'));
+        return;
+      }
+
+      const turns = history; // a reset mid-answer starts a fresh array, so late results can't leak into it
+      turns.push({ role: 'user', parts: [{ text }] });
+      const msg = add('bot typing', '<span class="dots"><i></i><i></i><i></i></span>');
+      ctrl = new AbortController();
+      setBusy(true);
+      let answer = '';
+      try {
+        const { reason } = await stream({
+          systemInstruction: { parts: [{ text: systemPrompt() }] },
+          contents: turns.slice(1 - MAX_TURNS * 2),
+          generationConfig: { maxOutputTokens: 1024 }
+        }, key, ctrl.signal, sofar => {
+          if (!sofar.trim()) return;
+          answer = sofar;
+          const stick = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+          msg.classList.remove('typing');
+          msg.innerHTML = render(answer);
+          if (stick) log.scrollTop = log.scrollHeight;
+        });
+        if (!answer.trim()) throw new Error("I couldn't come up with an answer. Try asking another way.");
+        if (reason === 'MAX_TOKENS') msg.innerHTML = render(`${answer} …`);
+        turns.push({ role: 'model', parts: [{ text: answer }] });
+      } catch (err) {
+        if (err.name === 'AbortError' && answer.trim()) {
+          turns.push({ role: 'model', parts: [{ text: answer }] });
+        } else {
+          turns.pop();
+          if (err.name === 'AbortError') msg.remove();
+          else {
+            msg.className = 'msg bot error';
+            msg.innerHTML = render(err.message || 'Something went wrong.');
+          }
+        }
+      } finally {
+        ctrl = null;
+        setBusy(false);
+      }
+    }
+
+    function open(on) {
+      document.body.classList.toggle('chat-open', on);
+      if (on) setTimeout(() => input.focus({ preventScroll: true }), 60);
+      else if (panel.contains(document.activeElement)) document.activeElement.blur();
+    }
+
+    function reset() {
+      ctrl?.abort();
+      history = [];
+      welcome();
+    }
+
+    chatForm.addEventListener('submit', e => {
+      e.preventDefault();
+      if (ctrl) ctrl.abort();
+      else send(input.value);
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+        e.preventDefault();
+        chatForm.requestSubmit();
+      }
+    });
+    input.addEventListener('input', autosize);
+
+    log.addEventListener('click', e => {
+      const idea = e.target.closest('.chat-ideas button');
+      if (idea) return send(idea.textContent);
+      const cite = e.target.closest('.cite');
+      if (!cite) return;
+      const slide = visibleSlides()[cite.dataset.n - 1];
+      if (slide) go(slides.indexOf(slide));
+      else toast(`There's no slide ${cite.dataset.n} 🤔`);
+    });
+
+    document.getElementById('chatBtn').onclick = () => open(!document.body.classList.contains('chat-open'));
+    document.getElementById('chatClose').onclick = () => open(false);
+    document.getElementById('chatClear').onclick = () => { reset(); toast('Fresh chat 🧹'); };
+
+    welcome();
+    return { reset, open, toggle: () => open(!document.body.classList.contains('chat-open')) };
+  })();
+
+  // ---------- AI deck generator (Gemini) ----------
+  (() => {
+    const ALLOWED_TAGS = new Set(['B', 'I', 'U', 'BR', 'KBD', 'SPAN', 'EM', 'STRONG']);
+    const genSlide = stage.querySelector('.s-gen');
+    const form = document.getElementById('genForm');
+    const topicIn = document.getElementById('genTopic');
+    const keyIn = document.getElementById('genKey');
+    const keyBox = document.getElementById('genKeyBox');
+    const keyState = document.getElementById('genKeyState');
+    const stageEl = document.getElementById('genStage');
+    const pctEl = document.getElementById('genPct');
+    const fillEl = document.getElementById('genFill');
+    const detailEl = document.getElementById('genDetail');
+    const dotsEl = document.getElementById('genDots');
+    const sayEl = document.getElementById('genSay');
+    const cancelBtn = document.getElementById('genCancel');
+    const idleLine = sayEl.textContent;
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    let ctrl = null;
+    let shown = 0, target = 0, cap = 0, raf = 0;
+
+    // ----- API key -----
+    try { keyIn.value = localStorage.getItem(KEY_STORE) || ''; } catch {}
+    function showKeyState() {
+      const has = !!keyIn.value.trim();
+      keyState.textContent = has ? '✓ saved' : '· needed';
+      keyState.classList.toggle('ok', has);
+    }
+    showKeyState();
+    keyBox.open = !keyIn.value.trim();
+    keyIn.addEventListener('input', () => {
+      try {
+        if (keyIn.value.trim()) localStorage.setItem(KEY_STORE, keyIn.value.trim());
+        else localStorage.removeItem(KEY_STORE);
+      } catch {}
+      showKeyState();
+    });
+
+    document.getElementById('genIdeas').addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      topicIn.value = b.textContent;
+      topicIn.focus();
+    });
+
+    // ----- Progress UI -----
+    function say(text) {
+      sayEl.textContent = text;
+      sayEl.classList.remove('bump');
+      void sayEl.offsetWidth; // restart the pop animation
+      sayEl.classList.add('bump');
+    }
+
+    function setStage(text, detail = '') {
+      stageEl.textContent = text;
+      detailEl.textContent = detail;
+    }
+
+    // `target` jumps when real work lands; it creeps toward `cap` while waiting, and the bar eases after it
+    function setProgress(t, c = t) {
+      target = Math.max(target, t);
+      cap = Math.max(cap, c, target);
+    }
+
+    function tick() {
+      target += (cap - target) * .006;
+      shown += (target - shown) * .08;
+      fillEl.style.width = `${shown}%`;
+      pctEl.textContent = `${Math.round(shown)}%`;
+      raf = form.classList.contains('busy') ? requestAnimationFrame(tick) : 0;
+    }
+
+    function start() {
+      shown = target = cap = 0;
+      fillEl.style.width = '0%';
+      form.classList.remove('done', 'failed');
+      form.classList.add('busy');
+      genSlide.classList.add('busy');
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.disabled = false;
+      if (!raf) raf = requestAnimationFrame(tick);
+    }
+
+    function finish() {
+      form.classList.remove('busy', 'done', 'failed');
+      genSlide.classList.remove('busy');
+      say(idleLine);
+    }
+
+    cancelBtn.onclick = () => { if (ctrl) ctrl.abort(); else finish(); };
+
+    // ----- Building the request -----
+    const plainText = html => {
+      const d = document.createElement('div');
+      d.innerHTML = html;
+      return d.textContent.trim();
+    };
+
+    // Every slide after this one, except the Pong bonus, in the current order
+    function plan() {
+      return slides.filter(s => s !== genSlide && !s.querySelector('#pong')).map(s => ({
+        slide: s,
+        fields: [
+          { id: `name-${s.dataset.sid}`, html: originalNames[s.dataset.sid] },
+          ...editables.filter(el => s.contains(el)).map(el => ({ id: `e${el.dataset.eid}`, el, html: originals[el.dataset.eid] }))
+        ]
+      }));
+    }
+
+    function buildPrompt(topic, deckPlan) {
+      const deck = deckPlan.map((p, i) => ({
+        slide: i + 1,
+        fields: p.fields.map(f => ({ id: f.id, original: f.html, maxChars: Math.max(14, Math.round(plainText(f.html).length * 1.3)) }))
+      }));
+      return [
+        `Rewrite this comic-book slide deck so it is entirely about: "${topic}".`,
+        '',
+        'The deck below is a template that was originally about Salesforce. Keep each slide\'s job in the story ' +
+        '(title, agenda, origin story, a core concept with four parts, a squad of seven types, a this-vs-that comparison, ' +
+        'a high-tech / future slide, five benefits, a four-level learning path, a finale), but fill it with content that genuinely fits the new topic.',
+        '',
+        'Rules:',
+        '- Return exactly one item per field id, in the same order as given, using each id unchanged.',
+        '- Write in an upbeat, playful comic-book voice for a general audience.',
+        '- Be factually accurate. If unsure, stay general instead of inventing numbers, names or dates.',
+        '- Stay close to each field\'s original length and never exceed its maxChars (visible text only).',
+        '- Keep the original\'s HTML shape: reuse only tags it already has (<br>, <b>, <i>, <u>, <kbd>, <span class="...">) in matching spots. No other HTML, no markdown.',
+        '- If the original is just an emoji, answer with 1-2 fitting emoji. Keep patterns like "01", "Level 1" or "Chapter 03".',
+        '- The agenda\'s chapter titles must match the titles of the slides they introduce.',
+        '- Ids starting with "name-" are short plain-text slide names for a sidebar (1-4 words).',
+        '- The code snippet field (spans with classes c, k, s) becomes a short, playful pseudo-code joke about the topic, keeping those span classes.',
+        '',
+        'Deck:',
+        JSON.stringify(deck)
+      ].join('\n');
+    }
+
+    // Model output goes into the page, so keep only simple formatting tags (and span classes)
+    function clean(html) {
+      const tpl = document.createElement('template');
+      tpl.innerHTML = html;
+      (function walk(node) {
+        [...node.childNodes].forEach(n => {
+          if (n.nodeType === Node.TEXT_NODE) return;
+          if (n.nodeType !== Node.ELEMENT_NODE) return n.remove();
+          walk(n);
+          if (!ALLOWED_TAGS.has(n.tagName)) return n.replaceWith(...n.childNodes);
+          [...n.attributes].forEach(a => { if (!(n.tagName === 'SPAN' && a.name === 'class')) n.removeAttribute(a.name); });
+        });
+      })(tpl.content);
+      return tpl.innerHTML.trim();
+    }
+
+    // ----- Generate and apply -----
+    async function generate(topic, key) {
+      const deckPlan = plan();
+      const fields = deckPlan.flatMap(p => p.fields);
+      const slideOf = deckPlan.flatMap((p, i) => p.fields.map(() => i));
+      dotsEl.innerHTML = deckPlan.map((_, i) => `<span class="gen-dot">${String(i + 1).padStart(2, '0')}</span>`).join('');
+      const dots = [...dotsEl.children];
+
+      setStage('Warming up the robot brain…', `Topic: ${topic}`);
+      say(`${topic}? Ooh, great pick! 🤔`);
+      setProgress(3, 14);
+
+      const body = {
+        contents: [{ role: 'user', parts: [{ text: buildPrompt(topic, deckPlan) }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              items: {
+                type: 'ARRAY',
+                items: {
+                  type: 'OBJECT',
+                  properties: { id: { type: 'STRING' }, html: { type: 'STRING' } },
+                  required: ['id', 'html'],
+                  propertyOrdering: ['id', 'html']
+                }
+              }
+            },
+            required: ['items']
+          }
+        }
+      };
+
+      // Fields arrive in order, so counting ids so far gives real progress
+      let seen = 0;
+      const { text, reason } = await stream(body, key, ctrl.signal, sofar => {
+        const n = Math.min((sofar.match(/"id"\s*:/g) || []).length, fields.length);
+        if (!n || n === seen) return;
+        if (!seen) { setStage('Writing your story…'); say('Typing at superhero speed! ⚡'); }
+        seen = n;
+        setProgress(14 + 76 * (n - 1) / fields.length, 14 + 76 * n / fields.length);
+        const si = slideOf[n - 1];
+        dots.forEach((d, i) => { d.classList.toggle('on', i < si); d.classList.toggle('now', i === si); });
+        detailEl.textContent = `Writing slide ${si + 1} of ${deckPlan.length}`;
+      });
+
+      if (reason === 'MAX_TOKENS') throw new Error('The AI reply was cut short. Try again.');
+      let items;
+      try { items = JSON.parse(text).items; } catch { throw new Error('The AI reply came back garbled. Try again.'); }
+      const byId = new Map((Array.isArray(items) ? items : [])
+        .filter(x => x && typeof x.html === 'string')
+        .map(x => [x.id, clean(x.html)]));
+      const missing = fields.filter(f => !byId.get(f.id)).length;
+      if (missing > fields.length / 2) throw new Error('The AI skipped most of the slides. Try again.');
+
+      // Past this point the deck changes, so cancelling is no longer offered
+      cancelBtn.disabled = true;
+      setStage('Inking the panels…');
+      say('Adding the comic magic ✨');
+      const names = {};
+      for (const [i, p] of deckPlan.entries()) {
+        p.fields.forEach(f => {
+          const html = byId.get(f.id);
+          if (!html) return;
+          if (f.el) f.el.innerHTML = html;
+          else {
+            names[p.slide.dataset.sid] = plainText(html).slice(0, 40);
+            setSlideName(p.slide.dataset.sid, names[p.slide.dataset.sid]);
+          }
+        });
+        dots[i].classList.remove('now');
+        dots[i].classList.add('on');
+        detailEl.textContent = `Slide ${i + 1} of ${deckPlan.length} · ${p.slide.getAttribute('aria-label')}`;
+        setProgress(90 + 10 * (i + 1) / deckPlan.length);
+        await sleep(90);
+      }
+      try {
+        persistEdits();
+        localStorage.setItem(NAMES_KEY, JSON.stringify(names));
+        localStorage.setItem(TOPIC_KEY, topic);
+      } catch {
+        toast("Applied, but browser storage is blocked so it won't be kept");
+      }
+      deckTopic = topic;
+      chat.reset(); // old answers were about the previous topic
+      if (document.body.classList.contains('side-open')) refreshThumbs();
+      return missing;
+    }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (form.classList.contains('busy')) return;
+      const topic = topicIn.value.trim().replace(/\s+/g, ' ');
+      const key = keyIn.value.trim();
+      if (!topic) { topicIn.focus(); return; }
+      if (!key) {
+        keyBox.open = true;
+        keyIn.focus();
+        toast('Add your Gemini API key first 🔑');
+        return;
+      }
+      if (dirty) { toast('Save or cancel your edits first ✏️'); return; }
+      if (editing) setEditing(false);
+      document.activeElement?.blur();
+
+      ctrl = new AbortController();
+      start();
+      try {
+        const missing = await generate(topic, key);
+        setProgress(100);
+        form.classList.add('done');
+        setStage('Ta-da! Your deck is ready! 🎉',
+          missing ? `${missing} small bits kept their old text.` : `Every slide is now about ${topic}.`);
+        say('Done! Off we go! 🚀');
+        toast('Deck generated! ✨');
+        await sleep(1400);
+        if (slides[current] === genSlide) step(1);
+        await sleep(700);
+        finish();
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          finish();
+          toast('Generation cancelled');
+          return;
+        }
+        form.classList.add('failed');
+        setStage('Oops!', err.message || 'Something went wrong.');
+        say("Hmm, that didn't work 😵");
+        cancelBtn.textContent = 'Try again';
+        cancelBtn.disabled = false;
+      } finally {
+        ctrl = null;
+      }
+    });
+  })();
+
+  loadLayout();
+  buildSidebar();
+  refreshSidebar();
+
+  window.addEventListener('resize', fit);
+  fit();
+  go(Math.min(slides.length - 1, Math.max(0, (parseInt(location.hash.slice(1), 10) || 1) - 1)));
+  if (isSkipped(slides[current])) { const from = current; step(1); if (current === from) step(-1); }
+</script>
+</body>
+</html>
