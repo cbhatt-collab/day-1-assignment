@@ -48,3 +48,4 @@ There's nothing to install or build. Download the file and open it in a browser.
 | `salesforce-deck.html` | The whole app: HTML, CSS and JavaScript in one file, with no dependencies apart from Google Fonts |
 | `salesforce.md` | The Markdown overview of Salesforce that the deck was built from |
 | `prompts.md`, `prompts2.md` | The prompts used to build this project with Claude Code |
+| `_redirects` | Tells Netlify to serve the deck at the site's root URL |
